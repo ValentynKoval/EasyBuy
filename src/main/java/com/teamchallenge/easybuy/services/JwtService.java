@@ -12,6 +12,11 @@ import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
+/**
+ * Service for generating, validating, and parsing JWT tokens.
+ * Supports both access and refresh tokens, and extracts email and role claims.
+ * All configuration parameters are externalized via application.properties.
+ */
 @Service
 public class JwtService {
     private final String secretKey;
