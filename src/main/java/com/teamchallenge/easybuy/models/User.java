@@ -1,6 +1,7 @@
 package com.teamchallenge.easybuy.models;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table(name = "users")
+@Builder
 public class User {
     @Id
     @Column(name = "id")
