@@ -1,7 +1,7 @@
 package com.teamchallenge.easybuy.services;
 
 import com.teamchallenge.easybuy.models.User;
-import com.teamchallenge.easybuy.models.UserDetailsImpl;
+import com.teamchallenge.easybuy.configs.UserDetailsImpl;
 import com.teamchallenge.easybuy.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +9,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * Implementation of the UserDetailsService interface.
+ * Loads a user from the database by email and returns a UserDetails wrapper for Spring Security.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
