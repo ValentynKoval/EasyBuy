@@ -1,8 +1,9 @@
 package com.teamchallenge.easybuy.services;
 
-import com.teamchallenge.easybuy.dto.AuthResponse;
-import com.teamchallenge.easybuy.dto.LoginRequest;
-import com.teamchallenge.easybuy.dto.RegisterRequest;
+import com.teamchallenge.easybuy.dto.AuthResponseDto;
+import com.teamchallenge.easybuy.dto.LoginRequestDto;
+import com.teamchallenge.easybuy.dto.RegisterRequestDto;
+import com.teamchallenge.easybuy.exceptions.UserAlreadyExistsException;
 import com.teamchallenge.easybuy.models.Role;
 import com.teamchallenge.easybuy.models.User;
 import com.teamchallenge.easybuy.repo.UserRepository;
@@ -28,30 +29,24 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
 
-    public AuthResponse register(RegisterRequest request) {
+    public void register(RegisterRequestDto request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists!");
+            throw new UserAlreadyExistsException(request.getEmail());
         }
 
-        User user = userRepository.save(User.builder()
-                        .email(request.getEmail())
-                        .password(passwordEncoder.encode(request.getPassword()))
-                        .firstName(request.getFirstName())
-                        .lastName(request.getLastName())
-                        .phoneNumber(request.getPhoneNumber())
-                        .createdAt(LocalDateTime.now())
-                        .isEmailVerified(false)
-                        .role(Role.CUSTOMER)
+        userRepository.save(User.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
+                .createdAt(LocalDateTime.now())
+                .isEmailVerified(false)
+                .role(Role.CUSTOMER)
                 .build());
-
-        String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole().name());
-        String refreshToken = jwtService.generateRefreshToken(user.getEmail(), user.getRole().name());
-        tokenService.createToken(user, refreshToken);
-
-        return new AuthResponse(accessToken, refreshToken);
     }
 
-    public AuthResponse authenticate(LoginRequest request) {
+    public AuthResponseDto authenticate(LoginRequestDto request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(), request.getPassword()
@@ -65,6 +60,6 @@ public class AuthenticationService {
         String refreshToken = jwtService.generateRefreshToken(user.getEmail(), user.getRole().name());
         tokenService.createToken(user, refreshToken);
 
-        return new AuthResponse(accessToken, refreshToken);
+        return new AuthResponseDto(accessToken, refreshToken);
     }
 }
