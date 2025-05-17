@@ -1,8 +1,10 @@
 package com.teamchallenge.easybuy.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +12,8 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table(name = "users")
+@RequiredArgsConstructor
+@AllArgsConstructor
 @Builder
 public class User {
     @Id
@@ -44,10 +48,10 @@ public class User {
     @Column(name = "profile_picture")
     private String profilePicture;
 
-    @Column(name = "location_latitude", precision = 8, scale = 6)
+    @Column(name = "location_latitude")
     private Double locationLatitude;
 
-    @Column(name = "location_longitude", precision = 8, scale = 6)
+    @Column(name = "location_longitude")
     private Double locationLongitude;
 
     @Enumerated(EnumType.STRING)
