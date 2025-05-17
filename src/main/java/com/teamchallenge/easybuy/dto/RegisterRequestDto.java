@@ -3,7 +3,7 @@ package com.teamchallenge.easybuy.dto;
 import lombok.Data;
 
 @Data
-public class RegisterRequest {
+public class RegisterRequestDto {
     private String email;
     private String password;
     private String firstName;
