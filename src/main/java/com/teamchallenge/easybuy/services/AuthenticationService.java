@@ -26,25 +26,27 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists!");
         }
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setCreatedAt(LocalDateTime.now());
-        user.setEmailVerified(false);
-        user.setRole(Role.CUSTOMER);
-        userRepository.save(user);
+        User user = userRepository.save(User.builder()
+                        .email(request.getEmail())
+                        .password(passwordEncoder.encode(request.getPassword()))
+                        .firstName(request.getFirstName())
+                        .lastName(request.getLastName())
+                        .phoneNumber(request.getPhoneNumber())
+                        .createdAt(LocalDateTime.now())
+                        .isEmailVerified(false)
+                        .role(Role.CUSTOMER)
+                .build());
 
         String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole().name());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail(), user.getRole().name());
+        tokenService.createToken(user, refreshToken);
 
         return new AuthResponse(accessToken, refreshToken);
     }
@@ -61,6 +63,7 @@ public class AuthenticationService {
 
         String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole().name());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail(), user.getRole().name());
+        tokenService.createToken(user, refreshToken);
 
         return new AuthResponse(accessToken, refreshToken);
     }
