@@ -39,7 +39,11 @@ public class TokenService {
     }
 
     @Transactional
-    public void revokeAllTokensTorUser(User user) {
+    public void revokeAllTokensForUser(User user) {
         tokenRepository.deleteAllByUser(user);
+    }
+
+    public Token findByToken(String token) {
+        return tokenRepository.findByToken(token).orElse(null);
     }
 }
