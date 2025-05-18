@@ -2,16 +2,18 @@ package com.teamchallenge.easybuy.controllers;
 
 import com.teamchallenge.easybuy.dto.AuthResponseDto;
 import com.teamchallenge.easybuy.dto.LoginRequestDto;
+import com.teamchallenge.easybuy.dto.RefreshTokenRequestDto;
 import com.teamchallenge.easybuy.dto.RegisterRequestDto;
-import com.teamchallenge.easybuy.models.Token;
-import com.teamchallenge.easybuy.models.User;
 import com.teamchallenge.easybuy.services.AuthenticationService;
 import com.teamchallenge.easybuy.services.JwtService;
 import com.teamchallenge.easybuy.services.TokenService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,50 +21,42 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthenticationService authenticationService;
-    private final TokenService tokenService;
-    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequestDto request) {
-        authenticationService.register(request);
-        return ResponseEntity.ok().build();
+        if(authenticationService.register(request)) {
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "The user with this email is already registered"));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginRequestDto request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto request) {
         AuthResponseDto authResponseDto = authenticationService.authenticate(request);
+        if (authResponseDto == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Incorrect login or password"));
+        }
         return ResponseEntity.ok(authResponseDto);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponseDto> refreshToken(@RequestParam String refreshToken) {
-        Token token = isTokenVerified(refreshToken);
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequestDto request) {
+        AuthResponseDto authResponseDto = authenticationService.refresh(request.getRefreshToken());
+        if (authResponseDto == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "The token is invalid"));
         }
-        User user = token.getUser();
-        String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole().name());
-        return ResponseEntity.ok(new AuthResponseDto(accessToken, refreshToken));
+        return ResponseEntity.ok(authResponseDto);
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<?> logout(@RequestParam String refreshToken) {
-        Token token = isTokenVerified(refreshToken);
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        tokenService.revokeToken(token);
+    public ResponseEntity<?> logout() {
+        authenticationService.logout();
         return ResponseEntity.ok().build();
-    }
-
-    private Token isTokenVerified(String refreshToken) {
-        if (refreshToken == null) {
-            return null;
-        }
-        Token token = tokenService.findByToken(refreshToken);
-        if (token == null && !tokenService.isValid(token)) {
-            return null;
-        }
-        return token;
     }
 }
