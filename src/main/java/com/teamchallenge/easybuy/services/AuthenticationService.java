@@ -90,6 +90,6 @@ public class AuthenticationService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found: " + username));
 
-        tokenService.revokeAllTokensForUser(user);
+        tokenService.revokedAllTokensByUser(user);
     }
 }
