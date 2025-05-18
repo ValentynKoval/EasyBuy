@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,11 +40,20 @@ public class TokenService {
     }
 
     @Transactional
-    public void revokeAllTokensForUser(User user) {
+    public void deleteAllTokensForUser(User user) {
         tokenRepository.deleteAllByUser(user);
     }
 
     public Token findByToken(String token) {
         return tokenRepository.findByToken(token).orElse(null);
+    }
+
+    @Transactional
+    public void revokedAllTokensByUser(User user) {
+        List<Token> tokens = tokenRepository.findAllByUserAndRevokedFalse(user);
+        for (Token token : tokens) {
+            token.setRevoked(true);
+        }
+        tokenRepository.saveAll(tokens);
     }
 }
