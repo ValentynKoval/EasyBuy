@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.configs;
 
 import com.teamchallenge.easybuy.models.User;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -12,6 +13,7 @@ import java.util.Collections;
  * Adapter class that wraps a User entity and implements the UserDetails interface.
  * Allows integration of custom user data with Spring Security.
  */
+@Getter
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
@@ -52,7 +54,4 @@ public class UserDetailsImpl implements UserDetails {
         return user.getEmail();
     }
 
-    public User getUser() {
-        return user;
-    }
 }
