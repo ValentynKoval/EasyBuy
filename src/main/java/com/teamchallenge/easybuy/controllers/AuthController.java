@@ -32,14 +32,15 @@ public class AuthController {
                 .replacePath(null)
                 .build()
                 .toUriString();
-        User user = authenticationService.register(registerRequestDto);
-        if(user != null) {
+        try {
+            User user = authenticationService.register(registerRequestDto);
             emailConfirmationService.sendConfirmationEmail(user, baseUrl);
             return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (IllegalStateException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(ex.getMessage());
         }
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", "The user with this email is already registered"));
     }
 
     @GetMapping("/confirm")
@@ -69,13 +70,14 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequestDto request) {
-        AuthResponseDto authResponseDto = authenticationService.refresh(request.getRefreshToken());
-        if (authResponseDto == null) {
+        try {
+            AuthResponseDto authResponseDto = authenticationService.refresh(request.getRefreshToken());
+            return ResponseEntity.ok(authResponseDto);
+        } catch (IllegalStateException ex) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "The token is invalid"));
+                    .body(ex.getMessage());
         }
-        return ResponseEntity.ok(authResponseDto);
     }
 
     @GetMapping("/logout")
