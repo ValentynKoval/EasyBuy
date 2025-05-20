@@ -1,13 +1,13 @@
 package com.teamchallenge.easybuy.configs;
 
 import com.teamchallenge.easybuy.services.UserDetailsServiceImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,7 +28,9 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    private static final String[] AUTH_WHITELIST = {"/api/auth/login", "/api/auth/register", "/api/auth/refresh"};
+    private static final String[] AUTH_WHITELIST = {"/api/auth/login", "/api/auth/register", "/api/auth/refresh",
+            "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
+            "/swagger-ui/index.html", "/v3/api-docs.yaml", "/webjars/**"};
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -42,9 +44,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/seller/**").hasAnyRole("ADMIN", "SELLER")
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(ex -> {ex.accessDeniedHandler(customAccessDeniedHandler);})
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(Customizer.withDefaults());
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, authEx) ->
+                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 
