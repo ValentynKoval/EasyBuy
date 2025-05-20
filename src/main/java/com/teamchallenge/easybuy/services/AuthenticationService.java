@@ -8,6 +8,8 @@ import com.teamchallenge.easybuy.models.Token;
 import com.teamchallenge.easybuy.models.User;
 import com.teamchallenge.easybuy.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * Service for handling user registration and authentication.
@@ -32,12 +35,12 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
 
-    public boolean register(RegisterRequestDto request) {
+    public User register(RegisterRequestDto request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            return false;
+            return null;
         }
 
-        userRepository.save(User.builder()
+        return userRepository.save(User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
@@ -47,10 +50,9 @@ public class AuthenticationService {
                 .isEmailVerified(false)
                 .role(Role.valueOf(request.getRole()))
                 .build());
-        return true;
     }
 
-    public AuthResponseDto authenticate(LoginRequestDto request) {
+    public ResponseEntity<?> authenticate(LoginRequestDto request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -59,15 +61,26 @@ public class AuthenticationService {
             );
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found with email : " + request.getEmail()));
-
-            String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole().name());
-            String refreshToken = jwtService.generateRefreshToken(user.getEmail(), user.getRole().name());
-            tokenService.createToken(user, refreshToken);
-
-            return new AuthResponseDto(accessToken, refreshToken);
+            if (!user.isEmailVerified()) {
+                throw new IllegalStateException("Email not confirmed");
+            }
+            return ResponseEntity.ok(generateToken(user));
         } catch (BadCredentialsException ex) {
-            return null;
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Incorrect login or password"));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.GONE)
+                    .body(Map.of("error", ex.getMessage()));
         }
+    }
+
+    public AuthResponseDto generateToken(User user) {
+        String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole().name());
+        String refreshToken = jwtService.generateRefreshToken(user.getEmail(), user.getRole().name());
+        tokenService.createToken(user, refreshToken);
+        return new AuthResponseDto(accessToken, refreshToken);
     }
 
     public AuthResponseDto refresh(String refreshToken) {
