@@ -36,9 +36,8 @@ public class AuthenticationService {
     private final TokenService tokenService;
 
     public User register(RegisterRequestDto request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return null;
-        }
+        if (userRepository.existsByEmail(request.getEmail()))
+            throw new IllegalStateException("The user with this email is already registered");
 
         return userRepository.save(User.builder()
                 .email(request.getEmail())
@@ -85,9 +84,9 @@ public class AuthenticationService {
 
     public AuthResponseDto refresh(String refreshToken) {
         Token token = tokenService.findByToken(refreshToken);
-        if (token == null || !tokenService.isValid(token)) {
-            return null;
-        }
+        if (token == null || !tokenService.isValid(token))
+            throw new IllegalStateException("Invalid token");
+
         User user = token.getUser();
         String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole().name());
         return new AuthResponseDto(accessToken, refreshToken);
