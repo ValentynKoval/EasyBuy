@@ -4,9 +4,9 @@ package com.teamchallenge.easybuy.models.goods;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.validator.constraints.UUID;
 
 import java.util.Set;
+import java.util.UUID;
 
 
 /**
@@ -31,6 +31,10 @@ public class Category {
     @Column(name = "id", nullable = false)
     @Schema(description = "Unique identifier of the category", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
     private UUID id;
+
+    @Column(name = "name", nullable = false)
+    @Schema(description = "Name of the category", example = "Electronics")
+    private String name;
 
     @Lob
     @Schema(description = "Detailed description of the category",

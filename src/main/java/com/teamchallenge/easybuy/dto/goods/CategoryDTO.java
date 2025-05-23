@@ -1,4 +1,5 @@
 package com.teamchallenge.easybuy.dto.goods;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
