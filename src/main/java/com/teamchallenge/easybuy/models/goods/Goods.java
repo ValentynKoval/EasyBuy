@@ -73,7 +73,7 @@ public class Goods {
     @NotNull
     @Column(name = "shopId", nullable = false)
     @Schema(description = "Unique shop ID")
-    private Integer shopId;
+    private UUID shopId;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
