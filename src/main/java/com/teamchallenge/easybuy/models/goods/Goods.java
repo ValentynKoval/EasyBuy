@@ -9,9 +9,9 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 //**
-// * Represents a product in the store's inventory.
-// * This entity is used to store information about products, including their price, stock, and supplier.
-// */
+// * * Represents a product (advertisement) in the store's catalog.
+// * This entity contains information about a product's name, price, stock,
+// * category, shop, and discount status.
 @Entity
 @Getter
 @Setter
@@ -42,15 +42,18 @@ public class Goods {
     @Schema(description = "Article number of the product, must be unique", example = "ART-00123")
     private String art;
 
+
     @NotNull
     @Column(name = "name", nullable = false)
     @Schema(description = "Name of the product", example = "Wireless Mouse")
     private String name;
 
+
     @Lob
     @Column(name = "description")
     @Schema(description = "Detailed description of the product", example = "A high-precision wireless mouse with ergonomic design.")
     private String description;
+
 
     @NotNull
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
@@ -66,6 +69,7 @@ public class Goods {
     @Schema(description = "Current stock level", example = "120", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer stock;
 
+
     @NotNull
     @Column(name = "shopId", nullable = false)
     @Schema(description = "Unique shop ID")
@@ -78,11 +82,18 @@ public class Goods {
     @Schema(description = "Category to which the product belongs", implementation = Category.class)
     private Category category;
 
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "goodsStatus", nullable = false)
     @Schema(description = "Status of the product (e.g., ACTIVE, INACTIVE, ARCHIVED)", example = "ACTIVE")
-    private GoodsStatus  goodsStatus;
+    private GoodsStatus goodsStatus;
+
+    public enum GoodsStatus {
+        ACTIVE,
+        INACTIVE,
+        ARCHIVED
+    }
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -90,20 +101,17 @@ public class Goods {
     @Schema(description = "Discount status of the product (e.g., NONE, ACTIVE, EXPIRED)", example = "ACTIVE")
     private DiscountStatus discountStatus;
 
+
+    public enum DiscountStatus {
+        NONE,
+        ACTIVE,
+        EXPIRED
+    }
+
+
     @Column(name = "discountValue", precision = 10, scale = 2)
     @Schema(description = "Value of the discount applied to the product", example = "10.00")
     private BigDecimal discountValue;
 
-    public enum GoodsStatus {
-            ACTIVE,
-            INACTIVE,
-            ARCHIVED
-        }
-
-        public enum DiscountStatus {
-            NONE,
-            ACTIVE,
-            EXPIRED
-        }
 
 }
