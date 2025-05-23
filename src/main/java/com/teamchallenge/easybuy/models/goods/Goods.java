@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+import org.hibernate.validator.constraints.UUID;
 
 //**
 // * * Represents a product (advertisement) in the store's catalog.
