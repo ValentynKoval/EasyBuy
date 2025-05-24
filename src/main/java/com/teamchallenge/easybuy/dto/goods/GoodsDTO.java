@@ -30,9 +30,8 @@ public class GoodsDTO {
     @Schema(description = "Unique shop ID", example = "1", required = true)
     private Integer shopId;
 
-    // TODO: 24.05.2025 decomment this block when CatogoryDTO has been implemented
-//    @Schema(description = "Category to which the product belongs", implementation = CategoryDTO.class)
-//    private CategoryDTO category;
+    @Schema(description = "Category to which the product belongs", implementation = CategoryDTO.class)
+    private CategoryDTO category;
 
     @Schema(description = "Status of the product (e.g., ACTIVE, INACTIVE, ARCHIVED)", example = "ACTIVE", required = true)
     private GoodsStatus goodsStatus;
