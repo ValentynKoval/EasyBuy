@@ -149,7 +149,8 @@ public class GoodsService {
     @CacheEvict(value = {"goods", "goodsByCategory"}, key = "#id")
     public void deleteGoods(UUID id) {
         Goods goods = goodsRepository.findById(id)
-                .orElseThrow(() -> new GoodsNotFoundException("Good not found with id: " + id));
+                .orElseThrow(() -> new GoodsNotFoundException(id));
+       
         // Call CrudRepository.delete
         ((org.springframework.data.repository.CrudRepository<Goods, UUID>) goodsRepository).delete(goods);
     }

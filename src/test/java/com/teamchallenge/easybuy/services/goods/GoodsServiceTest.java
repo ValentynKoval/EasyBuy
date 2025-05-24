@@ -214,14 +214,14 @@ class GoodsServiceTest {
     void deleteGoods_ShouldDeleteGoods_WhenFound() {
         // Arrange
         when(goodsRepository.findById(goodsId)).thenReturn(Optional.of(goods));
-        doNothing().when(goodsRepository).delete(goods);
+        doNothing().when(goodsRepository).deleteById(goodsId);
 
         // Act
         goodsService.deleteGoods(goodsId);
 
         // Assert
         verify(goodsRepository, times(1)).findById(goodsId);
-        verify(goodsRepository, times(1)).delete(goods);
+        verify(goodsRepository, times(1)).deleteById(goodsId);
     }
 
     @Test
@@ -233,7 +233,7 @@ class GoodsServiceTest {
         // Act & Assert
         assertThrows(GoodsNotFoundException.class, () -> goodsService.deleteGoods(goodsId));
         verify(goodsRepository, times(1)).findById(goodsId);
-        verify(goodsRepository, never()).delete(any());
+        verify(goodsRepository, never()).deleteById(any());
     }
 
     @Test
