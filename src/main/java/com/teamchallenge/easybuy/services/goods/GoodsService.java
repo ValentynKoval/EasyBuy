@@ -150,7 +150,8 @@ public class GoodsService {
     public void deleteGoods(UUID id) {
         Goods goods = goodsRepository.findById(id)
                 .orElseThrow(() -> new GoodsNotFoundException("Good not found with id: " + id));
-        goodsRepository.delete(goods);
+        // Call CrudRepository.delete
+        ((org.springframework.data.repository.CrudRepository<Goods, UUID>) goodsRepository).delete(goods);
     }
 
     /**

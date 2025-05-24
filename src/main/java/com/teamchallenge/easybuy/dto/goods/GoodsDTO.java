@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 @Schema(description = "DTO for representing goods in the catalog, intended for both buyer and seller clients")
@@ -28,13 +29,13 @@ public class GoodsDTO {
 
     // TODO: 24.05.2025 Change shopId on Shop name for use on client
     @Schema(description = "Unique shop ID", example = "1", required = true)
-    private Integer shopId;
+    private UUID shopId;
 
     @Schema(description = "Category to which the product belongs", implementation = CategoryDTO.class)
     private CategoryDTO category;
 
     @Schema(description = "Status of the product (e.g., ACTIVE, INACTIVE, ARCHIVED)", example = "ACTIVE", required = true)
-    private GoodsStatus goodsStatus;
+    private String goodsStatus;
 
     public enum GoodsStatus {
         ACTIVE,
@@ -43,7 +44,7 @@ public class GoodsDTO {
     }
 
     @Schema(description = "Discount status of the product (e.g., NONE, ACTIVE, EXPIRED)", example = "ACTIVE", required = true)
-    private DiscountStatus discountStatus;
+    private String discountStatus;
 
     public enum DiscountStatus {
         NONE,
