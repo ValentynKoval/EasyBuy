@@ -51,16 +51,18 @@ class CategoryServiceTest {
                 .subcategories(new HashSet<>())
                 .build();
 
-        categoryDTO = new CategoryDTO();
-        categoryDTO.setId(categoryId);
-        categoryDTO.setName("Mice");
-        categoryDTO.setDescription("Computer mice");
-        categoryDTO.setEnabled(true);
-        categoryDTO.setParentId(null);
-        categoryDTO.setSubcategoryIds(new HashSet<>());
-        categoryDTO.setLevel(0);
-        categoryDTO.setPath("Mice");
-        categoryDTO.setHasSubcategories(false);
+        // Используем Builder для CategoryDTO
+        categoryDTO = CategoryDTO.builder()
+                .id(categoryId)
+                .name("Mice")
+                .description("Computer mice")
+                .enabled(true)
+                .parentId(null)
+                .subcategoryIds(new HashSet<>())
+                .level(0)
+                .path("Mice")
+                .hasSubcategories(false)
+                .build();
     }
 
     @Test
@@ -133,8 +135,14 @@ class CategoryServiceTest {
     void createCategory_ShouldSetParent_WhenParentIdProvided() {
         // Arrange
         UUID parentId = UUID.randomUUID();
-        Category parent = Category.builder().id(parentId).name("Electronics").build();
-        categoryDTO.setParentId(parentId);
+        Category parent = Category.builder()
+                .id(parentId)
+                .name("Electronics")
+                .description("All kinds of electronic devices")
+                .enabled(true)
+                .parent(null)
+                .subcategories(new HashSet<>())
+                .build();
 
         when(categoryMapper.toEntity(categoryDTO)).thenReturn(category);
         when(categoryRepository.findById(parentId)).thenReturn(Optional.of(parent));
@@ -157,7 +165,18 @@ class CategoryServiceTest {
     @DisplayName("createCategory should throw CategoryNotFoundException when parentId is invalid")
     void createCategory_ShouldThrowException_WhenParentIdInvalid() {
         // Arrange
-        categoryDTO.setParentId(parentId);
+        categoryDTO = CategoryDTO.builder()
+                .id(categoryId)
+                .name("Mice")
+                .description("Computer mice")
+                .enabled(true)
+                .parentId(parentId)
+                .subcategoryIds(new HashSet<>())
+                .level(0)
+                .path("Mice")
+                .hasSubcategories(false)
+                .build();
+
         when(categoryMapper.toEntity(categoryDTO)).thenReturn(category);
         when(categoryRepository.findById(parentId)).thenReturn(Optional.empty());
 
@@ -181,16 +200,17 @@ class CategoryServiceTest {
                 .subcategories(new HashSet<>())
                 .build();
 
-        CategoryDTO updatedDTO = new CategoryDTO();
-        updatedDTO.setId(categoryId);
-        updatedDTO.setName("Updated Mice");
-        updatedDTO.setDescription("Updated computer mice");
-        updatedDTO.setEnabled(false);
-        updatedDTO.setParentId(null);
-        updatedDTO.setSubcategoryIds(new HashSet<>());
-        updatedDTO.setLevel(0);
-        updatedDTO.setPath("Updated Mice");
-        updatedDTO.setHasSubcategories(false);
+        CategoryDTO updatedDTO = CategoryDTO.builder()
+                .id(categoryId)
+                .name("Updated Mice")
+                .description("Updated computer mice")
+                .enabled(false)
+                .parentId(null)
+                .subcategoryIds(new HashSet<>())
+                .level(0)
+                .path("Updated Mice")
+                .hasSubcategories(false)
+                .build();
 
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
         when(categoryMapper.toEntity(updatedDTO)).thenReturn(updatedCategory);
@@ -221,20 +241,20 @@ class CategoryServiceTest {
         verify(categoryRepository, never()).save(any());
     }
 
-    @Test
-    @DisplayName("deleteCategory should delete category when found")
-    void deleteCategory_ShouldDeleteCategory_WhenFound() {
-        // Arrange
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
-        doNothing().when(categoryRepository).delete(category);
+        @Test
+        @DisplayName("deleteCategory should delete category when found")
+        void deleteCategory_ShouldDeleteCategory_WhenFound() {
+            // Arrange
+            when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+            doNothing().when(categoryRepository).deleteById(categoryId); // Используем deleteById
 
-        // Act
-        categoryService.deleteCategory(categoryId);
+            // Act
+            categoryService.deleteCategory(categoryId);
 
-        // Assert
-        verify(categoryRepository, times(1)).findById(categoryId);
-        verify(categoryRepository, times(1)).delete(category);
-    }
+            // Assert
+            verify(categoryRepository, times(1)).findById(categoryId);
+            verify(categoryRepository, times(1)).deleteById(categoryId); // Проверяем вызов deleteById
+        }
 
     @Test
     @DisplayName("deleteCategory should throw CategoryNotFoundException when not found")
@@ -245,16 +265,22 @@ class CategoryServiceTest {
         // Act & Assert
         assertThrows(CategoryNotFoundException.class, () -> categoryService.deleteCategory(categoryId));
         verify(categoryRepository, times(1)).findById(categoryId);
-        verify(categoryRepository, never()).delete(any());
+        verify(categoryRepository, never()).deleteById(any());
+
     }
 
     @Test
     @DisplayName("getAllCategoryIds should return category IDs when found")
     void getAllCategoryIds_ShouldReturnCategoryIds_WhenFound() {
         // Arrange
-        Category subcategory = Category.builder().id(UUID.randomUUID()).name("Wireless Mice").build();
-        category.getSubcategories().add(subcategory);
-
+        Category subcategory = Category.builder()
+                .id(UUID.randomUUID())
+                .name("Wireless Mice")
+                .description("Wireless computer mice")
+                .enabled(true)
+                .parent(null)
+                .subcategories(new HashSet<>())
+                .build();
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
 
         // Act

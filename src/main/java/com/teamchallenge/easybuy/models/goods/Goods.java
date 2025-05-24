@@ -113,5 +113,4 @@ public class Goods {
     @Schema(description = "Value of the discount applied to the product", example = "10.00")
     private BigDecimal discountValue;
 
-
 }

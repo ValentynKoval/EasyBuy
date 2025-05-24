@@ -88,7 +88,7 @@ public class CategoryService {
     @CacheEvict(value = {"categories", "categoryIds"}, allEntries = true)
     public CategoryDTO createCategory(CategoryDTO categoryDTO) {
         Category category = categoryMapper.toEntity(categoryDTO);
-        // Устанавливаем родительскую категорию, если указан parentId
+        // Set the parent category if parentId is specified
         if (categoryDTO.getParentId() != null) {
             Category parent = categoryRepository.findById(categoryDTO.getParentId())
                     .orElseThrow(() -> new CategoryNotFoundException(categoryDTO.getParentId()));
@@ -119,7 +119,7 @@ public class CategoryService {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
         Category updatedCategory = categoryMapper.toEntity(categoryDTO);
-        updatedCategory.setId(id); // Сохраняем ID
+        updatedCategory.setId(id); // Save ID
         // Update the parent category if parentId is specified
         if (categoryDTO.getParentId() != null) {
             Category parent = categoryRepository.findById(categoryDTO.getParentId())
@@ -128,7 +128,7 @@ public class CategoryService {
         } else {
             updatedCategory.setParent(null);
         }
-        // Сохраняем подкатегории из существующей категории, если они не предоставлены в DTO
+
         updatedCategory.setSubcategories(existingCategory.getSubcategories());
         Category savedCategory = categoryRepository.save(updatedCategory);
         return toDtoWithHierarchy(savedCategory, new HashSet<>());
@@ -150,15 +150,13 @@ public class CategoryService {
     public void deleteCategory(UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
-        // Перед удалением обновляем родительские связи подкатегорий
         if (category.getSubcategories() != null) {
             for (Category subcategory : category.getSubcategories()) {
                 subcategory.setParent(category.getParent());
                 categoryRepository.save(subcategory);
             }
         }
-        // Удаляем категорию
-        categoryRepository.delete(category);
+        categoryRepository.deleteById(id);
     }
 
     /**
@@ -187,7 +185,7 @@ public class CategoryService {
         boolean hasSubcategories = category.getSubcategories() != null && !category.getSubcategories().isEmpty();
         dto.setHasSubcategories(hasSubcategories);
 
-               if (hasSubcategories) {
+        if (hasSubcategories) {
             Set<UUID> subcategoryIds = category.getSubcategories().stream()
                     .map(Category::getId)
                     .collect(Collectors.toSet());
@@ -256,7 +254,7 @@ public class CategoryService {
     /**
      * Recursively collects all IDs of a category and its subcategories.
      *
-     * @param category The category to start collecting from.
+     * @param category    The category to start collecting from.
      * @param categoryIds The set to add IDs to.
      */
     private void collectCategoryIds(Category category, Set<UUID> categoryIds) {

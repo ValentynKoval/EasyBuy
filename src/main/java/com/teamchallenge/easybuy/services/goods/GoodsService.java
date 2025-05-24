@@ -263,4 +263,5 @@ public class GoodsService {
             return criteriaBuilder.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
     }
+
 }

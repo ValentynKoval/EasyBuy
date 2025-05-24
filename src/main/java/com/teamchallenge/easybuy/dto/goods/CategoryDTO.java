@@ -3,12 +3,14 @@ package com.teamchallenge.easybuy.dto.goods;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Set;
 import java.util.UUID;
 
 @Data
+@Builder
 @Schema(description = "DTO for representing a category in the catalog, including hierarchical structure, path, level, " +
         "and subcategories indicator for filtering")
 public class CategoryDTO {
