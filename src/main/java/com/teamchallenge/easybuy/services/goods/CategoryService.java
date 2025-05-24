@@ -5,7 +5,13 @@ import com.teamchallenge.easybuy.exceptions.CategoryNotFoundException;
 import com.teamchallenge.easybuy.mapper.goods.CategoryMapper;
 import com.teamchallenge.easybuy.models.goods.Category;
 import com.teamchallenge.easybuy.repo.goods.CategoryRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +33,13 @@ public class CategoryService {
      *
      * @return List of CategoryDTO objects representing all categories.
      */
+    @Operation(summary = "Get all categories", description = "Retrieves a list of all categories with computed hierarchy.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of categories",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CategoryDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @Cacheable(value = "categories", key = "'allCategories'")
     public List<CategoryDTO> getAllCategories() {
         List<Category> categories = categoryRepository.findAll();
@@ -43,11 +56,109 @@ public class CategoryService {
      * @return CategoryDTO object for the specified category.
      * @throws CategoryNotFoundException if the category is not found.
      */
+    @Operation(summary = "Get category by ID", description = "Retrieves a specific category by its unique identifier.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the category",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CategoryDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Category not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @Cacheable(value = "categories", key = "#id")
     public CategoryDTO getCategoryById(UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
         return toDtoWithHierarchy(category, new HashSet<>());
+    }
+
+    /**
+     * Creates a new category in the system.
+     *
+     * @param categoryDTO The CategoryDTO object containing the new category's details.
+     * @return CategoryDTO object of the created category.
+     */
+    @Operation(summary = "Create a new category", description = "Creates a new category with the provided details.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully created the category",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CategoryDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @CacheEvict(value = {"categories", "categoryIds"}, allEntries = true)
+    public CategoryDTO createCategory(CategoryDTO categoryDTO) {
+        Category category = categoryMapper.toEntity(categoryDTO);
+        // Устанавливаем родительскую категорию, если указан parentId
+        if (categoryDTO.getParentId() != null) {
+            Category parent = categoryRepository.findById(categoryDTO.getParentId())
+                    .orElseThrow(() -> new CategoryNotFoundException(categoryDTO.getParentId()));
+            category.setParent(parent);
+        }
+        Category savedCategory = categoryRepository.save(category);
+        return toDtoWithHierarchy(savedCategory, new HashSet<>());
+    }
+
+    /**
+     * Updates an existing category by its ID.
+     *
+     * @param id          The UUID of the category to update.
+     * @param categoryDTO The CategoryDTO object with updated details.
+     * @return CategoryDTO object of the updated category.
+     * @throws CategoryNotFoundException if the category is not found.
+     */
+    @Operation(summary = "Update a category", description = "Updates an existing category with the provided details.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated the category",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CategoryDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Category not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @CacheEvict(value = {"categories", "categoryIds"}, key = "#id")
+    public CategoryDTO updateCategory(UUID id, CategoryDTO categoryDTO) {
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
+        Category updatedCategory = categoryMapper.toEntity(categoryDTO);
+        updatedCategory.setId(id); // Сохраняем ID
+        // Update the parent category if parentId is specified
+        if (categoryDTO.getParentId() != null) {
+            Category parent = categoryRepository.findById(categoryDTO.getParentId())
+                    .orElseThrow(() -> new CategoryNotFoundException(categoryDTO.getParentId()));
+            updatedCategory.setParent(parent);
+        } else {
+            updatedCategory.setParent(null);
+        }
+        // Сохраняем подкатегории из существующей категории, если они не предоставлены в DTO
+        updatedCategory.setSubcategories(existingCategory.getSubcategories());
+        Category savedCategory = categoryRepository.save(updatedCategory);
+        return toDtoWithHierarchy(savedCategory, new HashSet<>());
+    }
+
+    /**
+     * Deletes a category by its ID.
+     *
+     * @param id The UUID of the category to delete.
+     * @throws CategoryNotFoundException if the category is not found.
+     */
+    @Operation(summary = "Delete a category", description = "Deletes a specific category by its unique identifier.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully deleted the category"),
+            @ApiResponse(responseCode = "404", description = "Category not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @CacheEvict(value = {"categories", "categoryIds"}, key = "#id")
+    public void deleteCategory(UUID id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
+        // Перед удалением обновляем родительские связи подкатегорий
+        if (category.getSubcategories() != null) {
+            for (Category subcategory : category.getSubcategories()) {
+                subcategory.setParent(category.getParent());
+                categoryRepository.save(subcategory);
+            }
+        }
+        // Удаляем категорию
+        categoryRepository.delete(category);
     }
 
     /**
@@ -73,20 +184,16 @@ public class CategoryService {
         String path = buildPath(category);
         dto.setPath(path);
 
-        // Sets hasSubcategories
         boolean hasSubcategories = category.getSubcategories() != null && !category.getSubcategories().isEmpty();
         dto.setHasSubcategories(hasSubcategories);
 
-        // Recursively processes parent and subcategories
-        if (category.getParent() != null) {
-            dto.setParent(toDtoWithHierarchy(category.getParent(), visited));
-        }
-        if (hasSubcategories) {
-            Set<CategoryDTO> subcategories = category.getSubcategories().stream()
-                    .map(sub -> toDtoWithHierarchy(sub, new HashSet<>(visited)))
-                    .filter(Objects::nonNull)
+               if (hasSubcategories) {
+            Set<UUID> subcategoryIds = category.getSubcategories().stream()
+                    .map(Category::getId)
                     .collect(Collectors.toSet());
-            dto.setSubcategories(subcategories);
+            dto.setSubcategoryIds(subcategoryIds);
+        } else {
+            dto.setSubcategoryIds(new HashSet<>());
         }
 
         return dto;
@@ -131,6 +238,12 @@ public class CategoryService {
      * @return Set of UUIDs including the category and all its subcategories.
      * @throws CategoryNotFoundException if the category is not found.
      */
+    @Operation(summary = "Get all category IDs", description = "Retrieves all IDs of a category and its subcategories.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved category IDs"),
+            @ApiResponse(responseCode = "404", description = "Category not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @Cacheable(value = "categoryIds", key = "#categoryId")
     public Set<UUID> getAllCategoryIds(UUID categoryId) {
         Category category = categoryRepository.findById(categoryId)

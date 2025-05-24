@@ -1,6 +1,5 @@
 package com.teamchallenge.easybuy.repo.goods;
 
-
 import com.teamchallenge.easybuy.models.goods.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
