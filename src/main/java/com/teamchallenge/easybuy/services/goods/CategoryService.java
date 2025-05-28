@@ -3,7 +3,7 @@ package com.teamchallenge.easybuy.services.goods;
 import com.teamchallenge.easybuy.dto.goods.CategoryDTO;
 import com.teamchallenge.easybuy.exceptions.CategoryNotFoundException;
 import com.teamchallenge.easybuy.mapper.goods.CategoryMapper;
-import com.teamchallenge.easybuy.models.goods.Category;
+import com.teamchallenge.easybuy.models.goods.category.Category;
 import com.teamchallenge.easybuy.repo.goods.CategoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

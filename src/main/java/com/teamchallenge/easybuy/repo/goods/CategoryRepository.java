@@ -1,6 +1,6 @@
 package com.teamchallenge.easybuy.repo.goods;
 
-import com.teamchallenge.easybuy.models.goods.Category;
+import com.teamchallenge.easybuy.models.goods.category.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.UUID;
