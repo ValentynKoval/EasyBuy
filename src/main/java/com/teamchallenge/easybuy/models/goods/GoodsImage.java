@@ -13,7 +13,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "goods_images")
+@Table(name = "goods_images", indexes = {
+        @Index(name = "idx_goods_images_goods_id", columnList = "goods_id")
+})
 @Schema(description = "Represents an additional image associated with a product.")
 public class GoodsImage {
 
@@ -28,9 +30,9 @@ public class GoodsImage {
     @Schema(description = "URL of the image", example = "https://example.com/images/product123_2.jpg")
     private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "goods_id", nullable = false)
     @NotNull
-    @Schema(description = "The product this image belongs to")
+    @Schema(description = "The product this image belongs to", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
     private Goods goods;
 }
