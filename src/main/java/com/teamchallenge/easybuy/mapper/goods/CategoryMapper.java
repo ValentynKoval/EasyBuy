@@ -2,19 +2,21 @@ package com.teamchallenge.easybuy.mapper.goods;
 
 import com.teamchallenge.easybuy.dto.goods.CategoryDTO;
 import com.teamchallenge.easybuy.models.goods.category.Category;
+import com.teamchallenge.easybuy.models.goods.category.CategoryAttribute;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
-    @Mapping(target = "parentId", source = "parent.id")
-    @Mapping(target = "subcategories", ignore = true) // Will be calculated in the service
-    @Mapping(target = "level", ignore = true) // Will be calculated in the service
-    @Mapping(target = "path", ignore = true) // Will be calculated in the service
-    @Mapping(target = "hasSubcategories", ignore = true) // Will be calculated in the service
+
+    @Mapping(source = "parentCategory.id", target = "parentId")
+    @Mapping(target = "subcategoryIds", expression = "java(category.getSubcategories().stream().map(Category::getId).toList())")
+    @Mapping(target = "attributes", expression = "java(category.getAttributes().stream().map(this::toAttributeDto).toList())")
     CategoryDTO toDto(Category category);
 
-    @Mapping(target = "parent", ignore = true) // Will be calculated in the service
-    @Mapping(target = "subcategories", ignore = true) // Will be calculated in the service
+    @Mapping(source = "parentId", target = "parentCategory.id")
     Category toEntity(CategoryDTO categoryDTO);
+
+    @Mapping(source = "type", target = "type", expression = "java(attribute.getType().toString())")
+    CategoryDTO.CategoryAttributeDTO toAttributeDto(CategoryAttribute attribute);
 }
