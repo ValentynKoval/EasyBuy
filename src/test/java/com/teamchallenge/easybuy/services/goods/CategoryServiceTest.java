@@ -38,31 +38,22 @@ class CategoryServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Подготовка тестовых данных
         categoryId = UUID.randomUUID();
         parentId = UUID.randomUUID();
 
-        category = Category.builder()
-                .id(categoryId)
-                .name("Mice")
-                .description("Computer mice")
-                .enabled(true)
-                .parent(null)
-                .subcategories(new HashSet<>())
-                .build();
+        category = new Category();
+        category.setId(categoryId);
+        category.setName("Electronics");
+        category.setParentCategory(null);
+        category.setSubcategories(new ArrayList<>());
+        category.setAttributes(new ArrayList<>());
 
-        // Используем Builder для CategoryDTO
-        categoryDTO = CategoryDTO.builder()
-                .id(categoryId)
-                .name("Mice")
-                .description("Computer mice")
-                .enabled(true)
-                .parentId(null)
-                .subcategoryIds(new HashSet<>())
-                .level(0)
-                .path("Mice")
-                .hasSubcategories(false)
-                .build();
+        categoryDTO = new CategoryDTO();
+        categoryDTO.setId(categoryId);
+        categoryDTO.setName("Electronics");
+        categoryDTO.setParentId(null);
+        categoryDTO.setSubcategoryIds(new ArrayList<>());
+        categoryDTO.setAttributes(new ArrayList<>());
     }
 
     @Test
@@ -73,7 +64,7 @@ class CategoryServiceTest {
         List<CategoryDTO> expectedDTOs = Collections.singletonList(categoryDTO);
 
         when(categoryRepository.findAll()).thenReturn(categories);
-        when(categoryMapper.toDto(any(Category.class))).thenReturn(categoryDTO);
+        when(categoryMapper.toDto(category)).thenReturn(categoryDTO);
 
         // Act
         List<CategoryDTO> result = categoryService.getAllCategories();
@@ -82,6 +73,21 @@ class CategoryServiceTest {
         assertEquals(expectedDTOs, result);
         verify(categoryRepository, times(1)).findAll();
         verify(categoryMapper, times(1)).toDto(category);
+    }
+
+    @Test
+    @DisplayName("getAllCategories should return empty list when no categories exist")
+    void getAllCategories_ShouldReturnEmptyList_WhenNoCategoriesExist() {
+        // Arrange
+        when(categoryRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        List<CategoryDTO> result = categoryService.getAllCategories();
+
+        // Assert
+        assertTrue(result.isEmpty());
+        verify(categoryRepository, times(1)).findAll();
+        verify(categoryMapper, never()).toDto(any());
     }
 
     @Test
@@ -131,86 +137,16 @@ class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("createCategory should set parent when parentId is provided")
-    void createCategory_ShouldSetParent_WhenParentIdProvided() {
-        // Arrange
-        UUID parentId = UUID.randomUUID();
-        Category parent = Category.builder()
-                .id(parentId)
-                .name("Electronics")
-                .description("All kinds of electronic devices")
-                .enabled(true)
-                .parent(null)
-                .subcategories(new HashSet<>())
-                .build();
-
-        when(categoryMapper.toEntity(categoryDTO)).thenReturn(category);
-        when(categoryRepository.findById(parentId)).thenReturn(Optional.of(parent));
-        when(categoryRepository.save(category)).thenReturn(category);
-        when(categoryMapper.toDto(category)).thenReturn(categoryDTO);
-
-        // Act
-        CategoryDTO result = categoryService.createCategory(categoryDTO);
-
-        // Assert
-        assertEquals(categoryDTO, result);
-        verify(categoryRepository, times(1)).findById(parentId);
-        verify(categoryMapper, times(1)).toEntity(categoryDTO);
-        verify(categoryRepository, times(1)).save(category);
-        verify(categoryMapper, times(1)).toDto(category);
-        assertEquals(parent, category.getParent()); // Проверяем, что parent установлен
-    }
-
-    @Test
-    @DisplayName("createCategory should throw CategoryNotFoundException when parentId is invalid")
-    void createCategory_ShouldThrowException_WhenParentIdInvalid() {
-        // Arrange
-        categoryDTO = CategoryDTO.builder()
-                .id(categoryId)
-                .name("Mice")
-                .description("Computer mice")
-                .enabled(true)
-                .parentId(parentId)
-                .subcategoryIds(new HashSet<>())
-                .level(0)
-                .path("Mice")
-                .hasSubcategories(false)
-                .build();
-
-        when(categoryMapper.toEntity(categoryDTO)).thenReturn(category);
-        when(categoryRepository.findById(parentId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(CategoryNotFoundException.class, () -> categoryService.createCategory(categoryDTO));
-        verify(categoryRepository, times(1)).findById(parentId);
-        verify(categoryMapper, times(1)).toEntity(categoryDTO);
-        verify(categoryRepository, never()).save(any());
-    }
-
-    @Test
     @DisplayName("updateCategory should update and return updated category")
     void updateCategory_ShouldUpdateAndReturnCategory() {
         // Arrange
-        Category updatedCategory = Category.builder()
-                .id(categoryId)
-                .name("Updated Mice")
-                .description("Updated computer mice")
-                .enabled(false)
-                .parent(null)
-                .subcategories(new HashSet<>())
-                .build();
+        CategoryDTO updatedDTO = new CategoryDTO();
+        updatedDTO.setId(categoryId);
+        updatedDTO.setName("Updated Electronics");
 
-        CategoryDTO updatedDTO = CategoryDTO.builder()
-                .id(categoryId)
-                .name("Updated Mice")
-                .description("Updated computer mice")
-                .enabled(false)
-                .parentId(null)
-                .subcategoryIds(new HashSet<>())
-                .level(0)
-                .path("Updated Mice")
-                .hasSubcategories(false)
-                .build();
+        Category updatedCategory = new Category();
+        updatedCategory.setId(categoryId);
+        updatedCategory.setName("Updated Electronics");
 
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
         when(categoryMapper.toEntity(updatedDTO)).thenReturn(updatedCategory);
@@ -238,23 +174,22 @@ class CategoryServiceTest {
         assertThrows(CategoryNotFoundException.class, () -> categoryService.updateCategory(categoryId, categoryDTO));
         verify(categoryRepository, times(1)).findById(categoryId);
         verify(categoryMapper, never()).toEntity(any());
-        verify(categoryRepository, never()).save(any());
     }
 
-        @Test
-        @DisplayName("deleteCategory should delete category when found")
-        void deleteCategory_ShouldDeleteCategory_WhenFound() {
-            // Arrange
-            when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
-            doNothing().when(categoryRepository).deleteById(categoryId); // Используем deleteById
+    @Test
+    @DisplayName("deleteCategory should delete category when found")
+    void deleteCategory_ShouldDeleteCategory_WhenFound() {
+        // Arrange
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        doNothing().when(categoryRepository).deleteById(categoryId);
 
-            // Act
-            categoryService.deleteCategory(categoryId);
+        // Act
+        categoryService.deleteCategory(categoryId);
 
-            // Assert
-            verify(categoryRepository, times(1)).findById(categoryId);
-            verify(categoryRepository, times(1)).deleteById(categoryId); // Проверяем вызов deleteById
-        }
+        // Assert
+        verify(categoryRepository, times(1)).findById(categoryId);
+        verify(categoryRepository, times(1)).deleteById(categoryId);
+    }
 
     @Test
     @DisplayName("deleteCategory should throw CategoryNotFoundException when not found")
@@ -266,41 +201,53 @@ class CategoryServiceTest {
         assertThrows(CategoryNotFoundException.class, () -> categoryService.deleteCategory(categoryId));
         verify(categoryRepository, times(1)).findById(categoryId);
         verify(categoryRepository, never()).deleteById(any());
-
     }
 
     @Test
-    @DisplayName("getAllCategoryIds should return category IDs when found")
-    void getAllCategoryIds_ShouldReturnCategoryIds_WhenFound() {
+    @DisplayName("getAllRootCategories should return root categories")
+    void getAllRootCategories_ShouldReturnRootCategories() {
         // Arrange
-        Category subcategory = Category.builder()
-                .id(UUID.randomUUID())
-                .name("Wireless Mice")
-                .description("Wireless computer mice")
-                .enabled(true)
-                .parent(null)
-                .subcategories(new HashSet<>())
-                .build();
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        List<Category> rootCategories = Collections.singletonList(category);
+        List<CategoryDTO> expectedDTOs = Collections.singletonList(categoryDTO);
+
+        when(categoryRepository.findAllRootCategories()).thenReturn(rootCategories);
+        when(categoryMapper.toDto(category)).thenReturn(categoryDTO);
 
         // Act
-        Set<UUID> result = categoryService.getAllCategoryIds(categoryId);
+        List<CategoryDTO> result = categoryService.getAllRootCategories();
 
         // Assert
-        assertEquals(2, result.size()); // categoryId + subcategoryId
-        assertTrue(result.contains(categoryId));
-        assertTrue(result.contains(subcategory.getId()));
-        verify(categoryRepository, times(1)).findById(categoryId);
+        assertEquals(expectedDTOs, result);
+        verify(categoryRepository, times(1)).findAllRootCategories();
+        verify(categoryMapper, times(1)).toDto(category);
     }
 
     @Test
-    @DisplayName("getAllCategoryIds should throw CategoryNotFoundException when not found")
-    void getAllCategoryIds_ShouldThrowException_WhenNotFound() {
+    @DisplayName("getAllSubcategoriesByParentId should return subcategories")
+    void getAllSubcategoriesByParentId_ShouldReturnSubcategories() {
         // Arrange
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+        Category subcategory = new Category();
+        subcategory.setId(UUID.randomUUID());
+        subcategory.setName("Laptops");
+        subcategory.setParentCategory(category);
 
-        // Act & Assert
-        assertThrows(CategoryNotFoundException.class, () -> categoryService.getAllCategoryIds(categoryId));
-        verify(categoryRepository, times(1)).findById(categoryId);
+        CategoryDTO subcategoryDTO = new CategoryDTO();
+        subcategoryDTO.setId(subcategory.getId());
+        subcategoryDTO.setName("Laptops");
+        subcategoryDTO.setParentId(categoryId);
+
+        List<Category> subcategories = Collections.singletonList(subcategory);
+        List<CategoryDTO> expectedDTOs = Collections.singletonList(subcategoryDTO);
+
+        when(categoryRepository.findAllSubcategoriesByParentId(categoryId)).thenReturn(subcategories);
+        when(categoryMapper.toDto(subcategory)).thenReturn(subcategoryDTO);
+
+        // Act
+        List<CategoryDTO> result = categoryService.getAllSubcategoriesByParentId(categoryId);
+
+        // Assert
+        assertEquals(expectedDTOs, result);
+        verify(categoryRepository, times(1)).findAllSubcategoriesByParentId(categoryId);
+        verify(categoryMapper, times(1)).toDto(subcategory);
     }
 }
