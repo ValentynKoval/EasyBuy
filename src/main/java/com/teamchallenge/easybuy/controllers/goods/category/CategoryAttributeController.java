@@ -49,7 +49,7 @@ public class CategoryAttributeController {
             @ApiResponse(responseCode = "201", description = "Successfully created", content = @Content(schema = @Schema(implementation = CategoryAttributeDTO.class)))
     })
     public ResponseEntity<CategoryAttributeDTO> createAttribute(@RequestBody CategoryAttributeDTO dto) {
-        return ResponseEntity.ok(categoryAttributeService.createAttribute(dto));
+        return ResponseEntity.status(201).body(categoryAttributeService.createAttribute(dto));
     }
 
     @PutMapping("/{id}")
