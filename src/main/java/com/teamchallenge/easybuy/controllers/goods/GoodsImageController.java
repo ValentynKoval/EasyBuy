@@ -47,7 +47,7 @@ public class GoodsImageController {
             @ApiResponse(responseCode = "201", description = "Successfully created", content = @Content(schema = @Schema(implementation = GoodsImageDTO.class)))
     })
     public ResponseEntity<GoodsImageDTO> createImage(@RequestBody GoodsImageDTO dto) {
-        return ResponseEntity.ok(goodsImageService.createImage(dto));
+        return ResponseEntity.status(201).body(goodsImageService.createImage(dto));
     }
 
     @PutMapping("/{id}")

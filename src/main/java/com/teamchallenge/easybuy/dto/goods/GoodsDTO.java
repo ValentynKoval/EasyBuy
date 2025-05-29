@@ -1,8 +1,11 @@
 package com.teamchallenge.easybuy.dto.goods;
 
+import com.teamchallenge.easybuy.models.goods.Goods;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -29,6 +32,7 @@ public class GoodsDTO {
     private String description;
 
     @NotNull
+    @Positive(message = "Price must be greater than 0")
     @Schema(description = "Price of the product", example = "1499.99")
     private BigDecimal price;
 
@@ -38,9 +42,11 @@ public class GoodsDTO {
     private String mainImageUrl;
 
     @NotNull
+    @PositiveOrZero(message = "Stock must be 0 or greater")
     @Schema(description = "Current stock level", example = "120")
     private Integer stock;
 
+    @PositiveOrZero(message = "Reviews count must be 0 or greater")
     @Schema(description = "Number of reviews for the product", example = "45")
     private Integer reviewsCount;
 
@@ -53,16 +59,17 @@ public class GoodsDTO {
 
     @NotNull
     @Schema(description = "Status of the product", example = "ACTIVE")
-    private String goodsStatus;
+    private Goods.GoodsStatus goodsStatus;
 
     @NotNull
     @Schema(description = "Discount status of the product", example = "NONE")
-    private String discountStatus;
+    private Goods.DiscountStatus discountStatus;
 
+    @PositiveOrZero(message = "Discount value must be 0 or greater")
     @Schema(description = "Discount value if applicable", example = "10.00")
     private BigDecimal discountValue;
 
-    @Schema(description = "Average rating of the product", example = "4")
+    @Schema(description = "Average rating of the product", example = "4", minimum = "0", maximum = "5")
     private Integer rating;
 
     @Schema(description = "SEO-friendly slug for the product", example = "wireless-mouse-123")
@@ -80,6 +87,6 @@ public class GoodsDTO {
     @Schema(description = "Timestamp when the product was last updated", example = "2025-05-28T11:21:00Z")
     private Instant updatedAt;
 
-    @Schema(description = "List of additional image URLs for the product")
-    private List<String> additionalImageUrls;
+    @Schema(description = "List of additional images for the product")
+    private List<GoodsImageDTO> additionalImages;
 }
