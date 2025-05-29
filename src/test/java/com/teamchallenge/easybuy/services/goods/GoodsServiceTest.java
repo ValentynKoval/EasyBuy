@@ -4,6 +4,7 @@ import com.teamchallenge.easybuy.dto.goods.GoodsDTO;
 import com.teamchallenge.easybuy.exceptions.GoodsNotFoundException;
 import com.teamchallenge.easybuy.mapper.goods.GoodsMapper;
 import com.teamchallenge.easybuy.models.goods.Goods;
+import com.teamchallenge.easybuy.models.goods.category.Category;
 import com.teamchallenge.easybuy.repo.goods.GoodsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,15 +16,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for GoodsService.
- */
 @ExtendWith(MockitoExtension.class)
 class GoodsServiceTest {
 
@@ -39,22 +38,39 @@ class GoodsServiceTest {
     private Goods goods;
     private GoodsDTO goodsDTO;
     private UUID goodsId;
+    private UUID categoryId;
+    private Category category;
 
     @BeforeEach
     void setUp() {
         goodsId = UUID.randomUUID();
-        goods = Goods.builder()
-                .id(goodsId)
-                .art("ART-001")
-                .name("Wireless Mouse")
-                .description("A high-precision wireless mouse.")
-                .price(new BigDecimal("1499.99"))
-                .stock(120)
-                .shopId(UUID.randomUUID())
-                .goodsStatus(Goods.GoodsStatus.ACTIVE)
-                .discountStatus(Goods.DiscountStatus.NONE)
-                .discountValue(null)
-                .build();
+        categoryId = UUID.randomUUID();
+
+        category = new Category();
+        category.setId(categoryId);
+        category.setName("Electronics");
+
+        goods = new Goods();
+        goods.setId(goodsId);
+        goods.setArt("ART-001");
+        goods.setName("Wireless Mouse");
+        goods.setDescription("A high-precision wireless mouse.");
+        goods.setPrice(new BigDecimal("1499.99"));
+        goods.setMainImageUrl("https://example.com/images/mouse.jpg");
+        goods.setStock(120);
+        goods.setReviewsCount(45);
+        goods.setShopId(UUID.randomUUID());
+        goods.setCategory(category);
+        goods.setGoodsStatus(Goods.GoodsStatus.ACTIVE);
+        goods.setDiscountStatus(Goods.DiscountStatus.NONE);
+        goods.setDiscountValue(null);
+        goods.setRating(4);
+        goods.setSlug("wireless-mouse-123");
+        goods.setMetaTitle("Wireless Mouse - Best Price");
+        goods.setMetaDescription("High-quality wireless mouse at the best price.");
+        goods.setCreatedAt(Instant.now());
+        goods.setUpdatedAt(Instant.now());
+        goods.setAdditionalImages(new ArrayList<>());
 
         goodsDTO = new GoodsDTO();
         goodsDTO.setId(goodsId);
@@ -62,11 +78,21 @@ class GoodsServiceTest {
         goodsDTO.setName("Wireless Mouse");
         goodsDTO.setDescription("A high-precision wireless mouse.");
         goodsDTO.setPrice(new BigDecimal("1499.99"));
+        goodsDTO.setMainImageUrl("https://example.com/images/mouse.jpg");
         goodsDTO.setStock(120);
+        goodsDTO.setReviewsCount(45);
         goodsDTO.setShopId(goods.getShopId());
-        goodsDTO.setGoodsStatus("ACTIVE"); // Уже строка
-        goodsDTO.setDiscountStatus("NONE"); // Уже строка
+        goodsDTO.setCategoryId(categoryId);
+        goodsDTO.setGoodsStatus("ACTIVE");
+        goodsDTO.setDiscountStatus("NONE");
         goodsDTO.setDiscountValue(null);
+        goodsDTO.setRating(4);
+        goodsDTO.setSlug("wireless-mouse-123");
+        goodsDTO.setMetaTitle("Wireless Mouse - Best Price");
+        goodsDTO.setMetaDescription("High-quality wireless mouse at the best price.");
+        goodsDTO.setCreatedAt(goods.getCreatedAt());
+        goodsDTO.setUpdatedAt(goods.getUpdatedAt());
+        goodsDTO.setAdditionalImageUrls(new ArrayList<>());
     }
 
     @Test
@@ -86,6 +112,21 @@ class GoodsServiceTest {
         assertEquals(expectedDTOs, result);
         verify(goodsRepository, times(1)).findAll();
         verify(goodsMapper, times(1)).toDto(goods);
+    }
+
+    @Test
+    @DisplayName("getAllGoods should return empty list when no goods exist")
+    void getAllGoods_ShouldReturnEmptyList_WhenNoGoodsExist() {
+        // Arrange
+        when(goodsRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        List<GoodsDTO> result = goodsService.getAllGoods();
+
+        // Assert
+        assertTrue(result.isEmpty());
+        verify(goodsRepository, times(1)).findAll();
+        verify(goodsMapper, never()).toDto(any());
     }
 
     @Test
@@ -153,30 +194,21 @@ class GoodsServiceTest {
     @DisplayName("updateGoods should update and return updated goods")
     void updateGoods_ShouldUpdateAndReturnGoods() {
         // Arrange
-        Goods updatedGoods = Goods.builder()
-                .id(goodsId)
-                .art("ART-002")
-                .name("Updated Mouse")
-                .description("Updated description.")
-                .price(new BigDecimal("1999.99"))
-                .stock(100)
-                .shopId(goods.getShopId())
-                .goodsStatus(Goods.GoodsStatus.ACTIVE)
-                .discountStatus(Goods.DiscountStatus.ACTIVE)
-                .discountValue(new BigDecimal("10.00"))
-                .build();
-
         GoodsDTO updatedDTO = new GoodsDTO();
         updatedDTO.setId(goodsId);
         updatedDTO.setArt("ART-002");
         updatedDTO.setName("Updated Mouse");
-        updatedDTO.setDescription("Updated description.");
         updatedDTO.setPrice(new BigDecimal("1999.99"));
-        updatedDTO.setStock(100);
-        updatedDTO.setShopId(goods.getShopId());
         updatedDTO.setGoodsStatus("ACTIVE");
         updatedDTO.setDiscountStatus("ACTIVE");
-        updatedDTO.setDiscountValue(new BigDecimal("10.00"));
+
+        Goods updatedGoods = new Goods();
+        updatedGoods.setId(goodsId);
+        updatedGoods.setArt("ART-002");
+        updatedGoods.setName("Updated Mouse");
+        updatedGoods.setPrice(new BigDecimal("1999.99"));
+        updatedGoods.setGoodsStatus(Goods.GoodsStatus.ACTIVE);
+        updatedGoods.setDiscountStatus(Goods.DiscountStatus.ACTIVE);
 
         when(goodsRepository.findById(goodsId)).thenReturn(Optional.of(goods));
         when(goodsRepository.existsByArt("ART-002")).thenReturn(false);
@@ -237,13 +269,9 @@ class GoodsServiceTest {
     }
 
     @Test
-    @DisplayName("searchGoods should return goods matching search criteria")
+    @DisplayName("searchGoods should return matching goods")
     void searchGoods_ShouldReturnMatchingGoods() {
         // Arrange
-        Map<String, String> searchParams = new HashMap<>();
-        searchParams.put("name", "Mouse");
-        searchParams.put("goodsstatus", "ACTIVE");
-
         List<Goods> goodsList = Collections.singletonList(goods);
         List<GoodsDTO> expectedDTOs = Collections.singletonList(goodsDTO);
 
@@ -251,7 +279,7 @@ class GoodsServiceTest {
         when(goodsMapper.toDto(goods)).thenReturn(goodsDTO);
 
         // Act
-        List<GoodsDTO> result = goodsService.searchGoods(searchParams);
+        List<GoodsDTO> result = goodsService.searchGoods(null, "ART-001", null, null, null, null, null, null, null, null, null);
 
         // Assert
         assertEquals(expectedDTOs, result);
@@ -263,13 +291,10 @@ class GoodsServiceTest {
     @DisplayName("searchGoods should return empty list when no matches")
     void searchGoods_ShouldReturnEmptyList_WhenNoMatches() {
         // Arrange
-        Map<String, String> searchParams = new HashMap<>();
-        searchParams.put("name", "NonExistent");
-
         when(goodsRepository.findAll(any(Specification.class))).thenReturn(Collections.emptyList());
 
         // Act
-        List<GoodsDTO> result = goodsService.searchGoods(searchParams);
+        List<GoodsDTO> result = goodsService.searchGoods(null, "NonExistent", null, null, null, null, null, null, null, null, null);
 
         // Assert
         assertTrue(result.isEmpty());
