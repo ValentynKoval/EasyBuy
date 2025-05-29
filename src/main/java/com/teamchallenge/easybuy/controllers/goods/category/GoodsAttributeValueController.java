@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-// Note: Caching is implemented at the service level. To control the cache on the client side, you can add @CacheControl.
+// todo Note: Caching is implemented at the service level. To control the cache on the client side, you can add @CacheControl.
 @RestController
 @RequestMapping("/api/attribute-values")
 @Tag(name = "Goods Attribute Values", description = "API for managing goods attribute values")
@@ -49,7 +49,7 @@ public class GoodsAttributeValueController {
             @ApiResponse(responseCode = "201", description = "Successfully created", content = @Content(schema = @Schema(implementation = GoodsAttributeValueDTO.class)))
     })
     public ResponseEntity<GoodsAttributeValueDTO> createAttributeValue(@RequestBody GoodsAttributeValueDTO dto) {
-        return ResponseEntity.ok(goodsAttributeValueService.createAttributeValue(dto));
+        return ResponseEntity.status(201).body(goodsAttributeValueService.createAttributeValue(dto));
     }
 
     @PutMapping("/{id}")
