@@ -1,7 +1,7 @@
 package com.teamchallenge.easybuy.services.goods;
 
 import com.teamchallenge.easybuy.dto.goods.GoodsDTO;
-import com.teamchallenge.easybuy.exceptions.GoodsNotFoundException;
+import com.teamchallenge.easybuy.exceptions.goods.GoodsNotFoundException;
 import com.teamchallenge.easybuy.mapper.goods.GoodsMapper;
 import com.teamchallenge.easybuy.models.goods.Goods;
 import com.teamchallenge.easybuy.models.goods.category.Category;
