@@ -1,48 +1,42 @@
 package com.teamchallenge.easybuy.dto.goods;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
-@Schema(description = "DTO for representing a category in the catalog, including hierarchical structure, path, level, " +
-        "and subcategories indicator for filtering")
+@Schema(description = "Data Transfer Object for Category entity, used in API responses and requests.")
 public class CategoryDTO {
-    @Schema(description = "Unique identifier of the category", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
-    @NotNull
+
+    @Schema(description = "Unique ID of the category", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
     private UUID id;
 
-    @Schema(description = "Name of the category", example = "Electronics")
     @NotNull
+    @Schema(description = "Name of the category", example = "Men's Jackets")
     private String name;
 
-    @Schema(description = "Detailed description of the category", example = "All kinds of electronic devices and accessories")
-    private String description;
-
-    @Schema(description = "ID of the parent category, if this is a subcategory", example = "a1b2c3d4-5678-90ef-ghij-klmnopqrstuv")
+    @Schema(description = "Parent category ID if this is a subcategory", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
     private UUID parentId;
 
-    @Schema(description = "IDs of subcategories belonging to this category")
-    private Set<UUID> subcategoryIds;
+    @Schema(description = "List of subcategory IDs")
+    private List<UUID> subcategoryIds;
 
-    @Schema(description = "Whether the category is active and visible", example = "true")
-    private boolean enabled;
+    @Schema(description = "List of attributes assigned to this category")
+    private List<CategoryAttributeDTO> attributes;
 
-    @Schema(description = "Full hierarchical path of the category, e.g., 'Electronics > Mice > Wireless Mice'",
-            example = "Electronics > Mice > Wireless Mice")
-    private String path;
+    @Data
+    @Schema(description = "Data Transfer Object for CategoryAttribute entity.")
+    public static class CategoryAttributeDTO {
+        @Schema(description = "Unique ID of the attribute", example = "63f1c7de-89f1-44a3-8288-8bff5f9ad47a")
+        private UUID id;
 
-    @Schema(description = "Depth level of the category in the hierarchy (0 for root, 1 for first-level children, etc.)",
-            example = "2")
-    @Min(0)
-    private int level;
+        @Schema(description = "Attribute name", example = "Color")
+        private String name;
 
-    @Schema(description = "Indicates whether the category has subcategories", example = "true")
-    private boolean hasSubcategories;
+        @Schema(description = "Type of the attribute", example = "STRING")
+        private String type;
+    }
 }
