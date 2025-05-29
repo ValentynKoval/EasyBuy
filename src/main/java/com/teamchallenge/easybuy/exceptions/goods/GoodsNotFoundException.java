@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.exceptions;
+package com.teamchallenge.easybuy.exceptions.goods;
 
 import java.util.UUID;
 
