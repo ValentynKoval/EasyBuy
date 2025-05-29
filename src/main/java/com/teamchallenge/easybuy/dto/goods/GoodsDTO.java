@@ -2,30 +2,30 @@ package com.teamchallenge.easybuy.dto.goods;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Data
-@Schema(description = "DTO for representing goods in the catalog, intended for both buyer and seller clients")
+@Schema(description = "Data Transfer Object for Goods entity, used in API responses and requests.")
 public class GoodsDTO {
 
-    @NotNull
-    @Schema(description = "Unique identifier for the product", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", accessMode = Schema.AccessMode.READ_ONLY)
-    private java.util.UUID id;
+    @Schema(description = "Unique identifier for the product", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
+    private UUID id;
 
     @NotNull
-    @Schema(description = "Article number of the product, must be unique", example = "ART-00123")
+    @Schema(description = "Article number of the product", example = "ART-00123")
     private String art;
 
     @NotNull
     @Schema(description = "Name of the product", example = "Wireless Mouse")
     private String name;
 
-
-    @Schema(description = "Detailed description of the product", example =
-            "A high-precision wireless mouse with ergonomic design.")
+    @Schema(description = "Detailed description of the product", example = "A high-precision wireless mouse with ergonomic design.")
     private String description;
 
     @NotNull
@@ -33,39 +33,53 @@ public class GoodsDTO {
     private BigDecimal price;
 
     @NotNull
+    @Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
+    @Schema(description = "Main image URL of the product", example = "https://example.com/images/product123.jpg")
+    private String mainImageUrl;
+
+    @NotNull
     @Schema(description = "Current stock level", example = "120")
     private Integer stock;
 
-    // TODO: 24.05.2025 Change shopId on Shop name for use on client
+    @Schema(description = "Number of reviews for the product", example = "45")
+    private Integer reviewsCount;
+
     @NotNull
-    @Schema(description = "Unique shop ID", example = "1")
+    @Schema(description = "ID of the shop owning the product", example = "a1b2c3d4-5678-90ef-ghij-klmnopqrstuv")
     private UUID shopId;
 
-    @Schema(description = "Category to which the product belongs", implementation = CategoryDTO.class)
-    private CategoryDTO category;
+    @Schema(description = "Category ID this product belongs to", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
+    private UUID categoryId;
 
     @NotNull
-    @Schema(description = "Status of the product (e.g., ACTIVE, INACTIVE, ARCHIVED)", example = "ACTIVE")
+    @Schema(description = "Status of the product", example = "ACTIVE")
     private String goodsStatus;
 
-    public enum GoodsStatus {
-        ACTIVE,
-        INACTIVE,
-        ARCHIVED
-    }
-
     @NotNull
-    @Schema(description = "Discount status of the product (e.g., NONE, ACTIVE, EXPIRED)", example = "ACTIVE")
+    @Schema(description = "Discount status of the product", example = "NONE")
     private String discountStatus;
 
-    public enum DiscountStatus {
-        NONE,
-        ACTIVE,
-        EXPIRED
-    }
-
-    @Schema(description = "Value of the discount applied to the product", example = "10.00")
+    @Schema(description = "Discount value if applicable", example = "10.00")
     private BigDecimal discountValue;
 
+    @Schema(description = "Average rating of the product", example = "4")
+    private Integer rating;
 
+    @Schema(description = "SEO-friendly slug for the product", example = "wireless-mouse-123")
+    private String slug;
+
+    @Schema(description = "Meta title for SEO", example = "Wireless Mouse - Best Price")
+    private String metaTitle;
+
+    @Schema(description = "Meta description for SEO", example = "High-quality wireless mouse at the best price.")
+    private String metaDescription;
+
+    @Schema(description = "Timestamp when the product was created", example = "2025-05-28T11:21:00Z")
+    private Instant createdAt;
+
+    @Schema(description = "Timestamp when the product was last updated", example = "2025-05-28T11:21:00Z")
+    private Instant updatedAt;
+
+    @Schema(description = "List of additional image URLs for the product")
+    private List<String> additionalImageUrls;
 }
