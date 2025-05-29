@@ -1,10 +1,10 @@
-package com.teamchallenge.easybuy.services.goods;
+package com.teamchallenge.easybuy.services.goods.category;
 
-import com.teamchallenge.easybuy.dto.goods.CategoryDTO;
-import com.teamchallenge.easybuy.exceptions.CategoryNotFoundException;
-import com.teamchallenge.easybuy.mapper.goods.CategoryMapper;
+import com.teamchallenge.easybuy.dto.goods.category.CategoryDTO;
+import com.teamchallenge.easybuy.exceptions.goods.CategoryNotFoundException;
+import com.teamchallenge.easybuy.mapper.goods.category.CategoryMapper;
 import com.teamchallenge.easybuy.models.goods.category.Category;
-import com.teamchallenge.easybuy.repo.goods.CategoryRepository;
+import com.teamchallenge.easybuy.repo.goods.category.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;

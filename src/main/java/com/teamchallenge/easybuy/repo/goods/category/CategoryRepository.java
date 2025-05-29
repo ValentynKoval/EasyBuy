@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.repo.goods;
+package com.teamchallenge.easybuy.repo.goods.category;
 
 import com.teamchallenge.easybuy.models.goods.category.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
