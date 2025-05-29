@@ -1,10 +1,11 @@
 package com.teamchallenge.easybuy.services.goods;
 
-import com.teamchallenge.easybuy.dto.goods.CategoryDTO;
-import com.teamchallenge.easybuy.exceptions.CategoryNotFoundException;
-import com.teamchallenge.easybuy.mapper.goods.CategoryMapper;
+import com.teamchallenge.easybuy.dto.goods.category.CategoryDTO;
+import com.teamchallenge.easybuy.exceptions.goods.CategoryNotFoundException;
+import com.teamchallenge.easybuy.mapper.goods.category.CategoryMapper;
 import com.teamchallenge.easybuy.models.goods.category.Category;
-import com.teamchallenge.easybuy.repo.goods.CategoryRepository;
+import com.teamchallenge.easybuy.repo.goods.category.CategoryRepository;
+import com.teamchallenge.easybuy.services.goods.category.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
