@@ -17,9 +17,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 /**
  * Service for handling user registration and authentication.
@@ -39,11 +39,13 @@ public class AuthenticationService {
         if (userRepository.existsByEmail(request.getEmail()))
             throw new IllegalStateException("The user with this email is already registered");
 
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
+        }
+
         return userRepository.save(User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
                 .phoneNumber(request.getPhoneNumber())
                 .createdAt(LocalDateTime.now())
                 .isEmailVerified(false)
@@ -67,11 +69,11 @@ public class AuthenticationService {
         } catch (BadCredentialsException ex) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Incorrect login or password"));
+                    .body( "Incorrect login or password");
         } catch (IllegalStateException ex) {
             return ResponseEntity
                     .status(HttpStatus.GONE)
-                    .body(Map.of("error", ex.getMessage()));
+                    .body(ex.getMessage());
         }
     }
 
