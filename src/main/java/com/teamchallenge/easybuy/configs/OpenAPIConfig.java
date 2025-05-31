@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "EasyBuy Marketplace API",
                 version = "v1",
-                description = "Документация REST-эндпойнтов"
+                description = "Documentation of REST endpoints"
         )
 )
 public class OpenAPIConfig { }
