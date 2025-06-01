@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
 
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             String field = error.getField();
-            String message = error.getDefaultMessage(); // те саме, що ти писав у DTO
+            String message = error.getDefaultMessage();
             errors.put(field, message);
         });
 
