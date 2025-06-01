@@ -1,16 +1,13 @@
-FROM eclipse-temurin:21-jdk-alpine
+FROM maven:3.9.3-eclipse-temurin-21-alpine
 
 WORKDIR /app
 
 COPY pom.xml .
-RUN ./mvnw dependency:go-offline || true
-
 COPY src ./src
 
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 ENV JAVA_OPTS=""
-
 ENV PORT 8080
 
 EXPOSE ${PORT}
