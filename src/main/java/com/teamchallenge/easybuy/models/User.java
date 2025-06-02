@@ -1,5 +1,6 @@
 package com.teamchallenge.easybuy.models;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Entity
@@ -17,24 +19,27 @@ import java.time.LocalDateTime;
 @Builder
 public class User {
     @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
+    @Column(name = "phone_number", length = 11, unique = true)
+    private String phoneNumber;
 
     @Column(name = "password")
     private String password;
 
-    @Column(name = "phone_number", length = 11)
-    private String phoneNumber;
+    @Column(name = "is_email_verified")
+    private boolean isEmailVerified;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "birthday")
+    private LocalDateTime birthday;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -42,19 +47,28 @@ public class User {
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
 
-    @Column(name = "is_email_verified")
-    private boolean isEmailVerified;
-
     @Column(name = "profile_picture")
     private String profilePicture;
 
-    @Column(name = "location_latitude")
-    private Double locationLatitude;
-
-    @Column(name = "location_longitude")
-    private Double locationLongitude;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    private Address address;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
+
+    @PrePersist
+    @Schema(hidden = true)
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.modifiedAt = LocalDateTime.now();
+        this.isEmailVerified = false;
+    }
+
+    @PreUpdate
+    @Schema(hidden = true)
+    protected void onUpdate() {
+        this.modifiedAt = LocalDateTime.now();
+    }
 }
