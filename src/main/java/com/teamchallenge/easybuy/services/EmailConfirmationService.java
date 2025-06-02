@@ -46,7 +46,7 @@ public class EmailConfirmationService {
         emailConfirmationToken.setToken(token);
         emailConfirmationToken.setUser(user);
         emailConfirmationToken.setCreatedAt(now);
-        emailConfirmationToken.setExpiresAt(now.plusSeconds(1));
+        emailConfirmationToken.setExpiresAt(now.plusHours(24));
         emailConfirmationTokenRepository.save(emailConfirmationToken);
 
         String link = url + "/api/auth/confirm?token=" + token;
