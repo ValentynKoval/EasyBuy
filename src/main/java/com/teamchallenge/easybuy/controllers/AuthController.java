@@ -77,7 +77,7 @@ public class AuthController {
         } catch (ResponseStatusException ex) {
             return ResponseEntity
                     .status(ex.getStatusCode())
-                    .body(ex.getMessage());
+                    .body(ex.getReason());
         }
     }
 
