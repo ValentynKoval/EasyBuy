@@ -19,8 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-
 /**
  * Service for handling user registration and authentication.
  * Hashes passwords, authenticates users via AuthenticationManager,
@@ -34,23 +32,33 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final ShopService shopService;
 
     public User register(RegisterRequestDto request) {
-        if (userRepository.existsByEmail(request.getEmail()))
-            throw new IllegalStateException("The user with this email is already registered");
+        if (userRepository.existsByEmailAndPhoneNumber(request.getEmail(), request.getPhoneNumber()))
+            throw new IllegalStateException("The user with this email or phone number is already registered");
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
         }
 
-        return userRepository.save(User.builder()
+        if (request.getStoreName() == null && request.getRole().equals("SELLER") ||
+        request.getStoreName() != null && request.getRole().equals("CUSTOMER")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect role");
+        }
+
+        User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
-                .createdAt(LocalDateTime.now())
-                .isEmailVerified(false)
                 .role(Role.valueOf(request.getRole()))
-                .build());
+                .build();
+
+        if (request.getRole().equals("SELLER")) {
+            shopService.createShop(user, request.getStoreName());
+        }
+
+        return user;
     }
 
     public ResponseEntity<?> authenticate(LoginRequestDto request) {
