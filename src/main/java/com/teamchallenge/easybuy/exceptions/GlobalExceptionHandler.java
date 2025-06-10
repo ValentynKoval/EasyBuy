@@ -1,9 +1,6 @@
 package com.teamchallenge.easybuy.exceptions;
 
-import com.teamchallenge.easybuy.exceptions.goods.CategoryAttributeException;
-import com.teamchallenge.easybuy.exceptions.goods.CategoryNotFoundException;
-import com.teamchallenge.easybuy.exceptions.goods.GoodsAttributeValueException;
-import com.teamchallenge.easybuy.exceptions.goods.GoodsImageException;
+import com.teamchallenge.easybuy.exceptions.goods.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -29,6 +26,15 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(CategoryNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleCategoryNotFoundException(CategoryNotFoundException ex, WebRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request);
+    }
+
+    /**
+     * Handles GoodsNotFoundException with HTTP 404 status.
+     * This handler was missing and caused the 500 error in tests.
+     */
+    @ExceptionHandler(GoodsNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleGoodsNotFoundException(GoodsNotFoundException ex, WebRequest request) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request);
     }
 

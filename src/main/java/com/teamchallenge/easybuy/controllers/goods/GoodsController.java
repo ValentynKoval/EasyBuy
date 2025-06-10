@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,22 +46,18 @@ public class GoodsController {
             @RequestParam(required = false) Goods.GoodsStatus goodsStatus,
             @RequestParam(required = false) Goods.DiscountStatus discountStatus,
             @RequestParam(required = false) Integer rating) {
-        Goods goodsFilter = new Goods();
-        goodsFilter.setId(id);
-        goodsFilter.setArt(art);
-        goodsFilter.setName(name);
-        goodsFilter.setPrice(price);
-        goodsFilter.setStock(stock);
-        goodsFilter.setReviewsCount(reviewsCount);
-        goodsFilter.setShopId(shopId);
-        goodsFilter.setCategory(categoryId != null ? new Category() {{ setId(categoryId); }} : null);
-        goodsFilter.setGoodsStatus(goodsStatus);
-        goodsFilter.setDiscountStatus(discountStatus);
-        goodsFilter.setRating(rating);
+        // This part creates a temporary Category object just to set its ID.
+        // For search filters, it's often cleaner to pass the UUID directly
+        // and let the service handle any necessary entity lookups.
+        Category categoryFilter = null;
+        if (categoryId != null) {
+            categoryFilter = new Category();
+            categoryFilter.setId(categoryId);
+        }
 
         return ResponseEntity.ok(goodsService.searchGoods(
                 id, art, name, price, stock, reviewsCount, shopId,
-                goodsFilter.getCategory(), goodsStatus, discountStatus, rating));
+                categoryFilter, goodsStatus, discountStatus, rating));
     }
 
     @GetMapping("/{id}")
@@ -78,7 +75,7 @@ public class GoodsController {
             @ApiResponse(responseCode = "201", description = "Successfully created",
                     content = @Content(schema = @Schema(implementation = GoodsDTO.class)))
     })
-    public ResponseEntity<GoodsDTO> createGoods(@RequestBody GoodsDTO dto) {
+    public ResponseEntity<GoodsDTO> createGoods(@Valid @RequestBody GoodsDTO dto) { // Added @Valid
         return ResponseEntity.status(201).body(goodsService.createGoods(dto));
     }
 
@@ -88,7 +85,7 @@ public class GoodsController {
                     content = @Content(schema = @Schema(implementation = GoodsDTO.class))),
             @ApiResponse(responseCode = "404", description = "Goods not found")
     })
-    public ResponseEntity<GoodsDTO> updateGoods(@PathVariable UUID id, @RequestBody GoodsDTO dto) {
+    public ResponseEntity<GoodsDTO> updateGoods(@PathVariable UUID id, @Valid @RequestBody GoodsDTO dto) { // Added @Valid
         return ResponseEntity.ok(goodsService.updateGoods(id, dto));
     }
 

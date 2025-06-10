@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamchallenge.easybuy.dto.goods.GoodsDTO;
 import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 import com.teamchallenge.easybuy.exceptions.goods.GoodsNotFoundException;
-import com.teamchallenge.easybuy.models.goods.Goods; // For Goods.GoodsStatus and Goods.DiscountStatus
+import com.teamchallenge.easybuy.models.goods.Goods;
 import com.teamchallenge.easybuy.services.goods.GoodsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -225,7 +225,7 @@ class GoodsControllerTest {
                 // Verify specific error messages for each violated constraint
                 .andExpect(jsonPath("$.errors.name").value("must not be null"))
                 .andExpect(jsonPath("$.errors.art").value("must not be null"))
-                .andExpect(jsonPath("$.errors.price").value("must be greater than 0"))
+                .andExpect(jsonPath("$.errors.price").value("Price must be greater than 0"))
                 .andExpect(jsonPath("$.errors.stock").value("must be greater than or equal to 0"))
                 .andExpect(jsonPath("$.errors.shopId").value("must not be null"))
                 .andExpect(jsonPath("$.errors.categoryId").value("must not be null")) // Assuming categoryId is @NotNull
