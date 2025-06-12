@@ -88,16 +88,16 @@ public class GoodsImageService {
     @CacheEvict(value = "goodsImages", allEntries = true)
     @Operation(summary = "Create image", description = "Uploads image to Cloudinary and saves reference in DB.")
     public GoodsImageDTO createImage(UUID goodsId, MultipartFile file) throws IOException {
-        // Step 1: Upload image to Cloudinary
-        String imageUrl = cloudinaryImageService.uploadImage(file);
-
-        // Step 2: Create entity
-        GoodsImage newImage = new GoodsImage();
-        newImage.setImageUrl(imageUrl);
-
-        // Step 3: Attach to goods
+        // Step 1: Get the Goods object to get the shopId and art
         Goods goods = goodsRepository.findById(goodsId)
                 .orElseThrow(() -> new GoodsImageException("Goods with ID " + goodsId + " not found for image creation"));
+
+        // Step 2: Upload image to Cloudinary from shopId and art
+        String imageUrl = cloudinaryImageService.uploadImage(file, goods.getShopId(), goods.getArt());
+
+        // Step 3: Create entity
+        GoodsImage newImage = new GoodsImage();
+        newImage.setImageUrl(imageUrl);
         newImage.setGoods(goods);
 
         // Step 4: Save in DB
@@ -108,7 +108,7 @@ public class GoodsImageService {
      * Updates an existing image by replacing it in Cloudinary and updating the DB.
      *
      * @param id      image ID to update
-     * @param goodsId related goods ID (currently unused but reserved)
+     * @param goodsId related goods ID (currently unused but reserved, but will be used to get shopId and art)
      * @param file    new image file
      * @return updated GoodsImageDTO
      * @throws IOException on upload/delete failure
@@ -120,14 +120,18 @@ public class GoodsImageService {
         GoodsImage existingImage = goodsImageRepository.findById(id)
                 .orElseThrow(() -> new GoodsImageException("Image with ID " + id + " not found"));
 
+        // We get the Goods object to get the shopId and art for the new upload
+        Goods goods = goodsRepository.findById(goodsId)
+                .orElseThrow(() -> new GoodsImageException("Goods with ID " + goodsId + " not found for image update"));
+
         // Step 1: Delete old image from Cloudinary
         String oldPublicId = cloudinaryImageService.extractPublicIdFromUrl(existingImage.getImageUrl());
         if (oldPublicId != null) {
             cloudinaryImageService.deleteImage(oldPublicId);
         }
 
-        // Step 2: Upload new image
-        String newImageUrl = cloudinaryImageService.uploadImage(file);
+        // Step 2: Upload new image з shopId та art
+        String newImageUrl = cloudinaryImageService.uploadImage(file, goods.getShopId(), goods.getArt());
 
         // Step 3: Update and persist entity
         existingImage.setImageUrl(newImageUrl);
