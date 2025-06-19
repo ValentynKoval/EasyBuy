@@ -1,5 +1,6 @@
 package com.teamchallenge.easybuy.controllers;
 
+import com.teamchallenge.easybuy.dto.AddressDto;
 import com.teamchallenge.easybuy.dto.CustomerDto;
 import com.teamchallenge.easybuy.services.CustomerService;
 import jakarta.validation.Valid;
@@ -23,6 +24,11 @@ public class CustomerController {
     @PutMapping("/profile")
     public ResponseEntity<CustomerDto> updateProfile(@Valid @RequestBody CustomerDto customerDto) {
         return ResponseEntity.status(HttpStatus.OK).body(customerService.updateProfile(customerDto));
+    }
+
+    @PutMapping("/address")
+    public ResponseEntity<AddressDto> updateAddress(@Valid @RequestBody AddressDto addressDto) {
+        return ResponseEntity.status(HttpStatus.OK).body(customerService.updateAddress(addressDto));
     }
 
     @DeleteMapping("/profile")
