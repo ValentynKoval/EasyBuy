@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 
 @ExtendWith(MockitoExtension.class)
 class GoodsImageControllerTest {
@@ -42,7 +43,9 @@ class GoodsImageControllerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(goodsImageController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(goodsImageController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Test
@@ -80,7 +83,9 @@ class GoodsImageControllerTest {
 
         mockMvc.perform(get("/api/goods-images/{id}", id))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Image with ID " + id + " not found"));
     }
 
     @Test

@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryAttributeControllerTest {
@@ -43,7 +44,9 @@ class CategoryAttributeControllerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(categoryAttributeController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(categoryAttributeController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Test
@@ -85,7 +88,8 @@ class CategoryAttributeControllerTest {
         mockMvc.perform(get("/api/category-attributes/{id}", id))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("Not Found"));
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Attribute with ID " + id + " not found"));
     }
 
     @Test

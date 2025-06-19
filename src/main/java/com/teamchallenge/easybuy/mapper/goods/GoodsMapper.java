@@ -4,18 +4,16 @@ import com.teamchallenge.easybuy.dto.goods.GoodsDTO;
 import com.teamchallenge.easybuy.models.goods.Goods;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = GoodsImageMapper.class, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface GoodsMapper {
 
     @Mapping(source = "category.id", target = "categoryId")
-    @Mapping(source = "goodsStatus", target = "goodsStatus", expression = "java(goods.getGoodsStatus().toString())")
-    @Mapping(source = "discountStatus", target = "discountStatus", expression = "java(goods.getDiscountStatus().toString())")
-    @Mapping(target = "additionalImageUrls", expression = "java(goods.getAdditionalImages().stream().map(GoodsImage::getImageUrl).toList())")
+    @Mapping(target = "additionalImages", expression = "java(goods.getAdditionalImages() != null ? goods.getAdditionalImages().stream().map(GoodsImageMapper.INSTANCE::toDto).toList() : null)")
     GoodsDTO toDto(Goods goods);
 
     @Mapping(source = "categoryId", target = "category.id")
-    @Mapping(source = "goodsStatus", target = "goodsStatus", expression = "java(com.teamchallenge.easybuy.models.goods.Goods.GoodsStatus.valueOf(goodsDTO.getGoodsStatus()))")
-    @Mapping(source = "discountStatus", target = "discountStatus", expression = "java(com.teamchallenge.easybuy.models.goods.Goods.DiscountStatus.valueOf(goodsDTO.getDiscountStatus()))")
+    @Mapping(target = "additionalImages", ignore = true)
     Goods toEntity(GoodsDTO goodsDTO);
 }

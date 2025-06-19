@@ -17,7 +17,11 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -83,8 +87,8 @@ class GoodsServiceTest {
         goodsDTO.setReviewsCount(45);
         goodsDTO.setShopId(goods.getShopId());
         goodsDTO.setCategoryId(categoryId);
-        goodsDTO.setGoodsStatus("ACTIVE");
-        goodsDTO.setDiscountStatus("NONE");
+        goodsDTO.setGoodsStatus(Goods.GoodsStatus.ACTIVE);
+        goodsDTO.setDiscountStatus(Goods.DiscountStatus.NONE);
         goodsDTO.setDiscountValue(null);
         goodsDTO.setRating(4);
         goodsDTO.setSlug("wireless-mouse-123");
@@ -92,54 +96,45 @@ class GoodsServiceTest {
         goodsDTO.setMetaDescription("High-quality wireless mouse at the best price.");
         goodsDTO.setCreatedAt(goods.getCreatedAt());
         goodsDTO.setUpdatedAt(goods.getUpdatedAt());
-        goodsDTO.setAdditionalImageUrls(new ArrayList<>());
+        goodsDTO.setAdditionalImages(new ArrayList<>());
     }
 
     @Test
-    @DisplayName("getAllGoods should return list of goods")
+    @DisplayName("getAllGoods should return a list of goods DTOs")
     void getAllGoods_ShouldReturnListOfGoods() {
-        // Arrange
         List<Goods> goodsList = Collections.singletonList(goods);
         List<GoodsDTO> expectedDTOs = Collections.singletonList(goodsDTO);
 
         when(goodsRepository.findAll()).thenReturn(goodsList);
         when(goodsMapper.toDto(goods)).thenReturn(goodsDTO);
 
-        // Act
         List<GoodsDTO> result = goodsService.getAllGoods();
 
-        // Assert
         assertEquals(expectedDTOs, result);
         verify(goodsRepository, times(1)).findAll();
         verify(goodsMapper, times(1)).toDto(goods);
     }
 
     @Test
-    @DisplayName("getAllGoods should return empty list when no goods exist")
+    @DisplayName("getAllGoods should return an empty list when no goods exist")
     void getAllGoods_ShouldReturnEmptyList_WhenNoGoodsExist() {
-        // Arrange
         when(goodsRepository.findAll()).thenReturn(Collections.emptyList());
 
-        // Act
         List<GoodsDTO> result = goodsService.getAllGoods();
 
-        // Assert
         assertTrue(result.isEmpty());
         verify(goodsRepository, times(1)).findAll();
         verify(goodsMapper, never()).toDto(any());
     }
 
     @Test
-    @DisplayName("getGoodsById should return goods when found")
+    @DisplayName("getGoodsById should return goods DTO when found")
     void getGoodsById_ShouldReturnGoods_WhenFound() {
-        // Arrange
         when(goodsRepository.findById(goodsId)).thenReturn(Optional.of(goods));
         when(goodsMapper.toDto(goods)).thenReturn(goodsDTO);
 
-        // Act
         GoodsDTO result = goodsService.getGoodsById(goodsId);
 
-        // Assert
         assertEquals(goodsDTO, result);
         verify(goodsRepository, times(1)).findById(goodsId);
         verify(goodsMapper, times(1)).toDto(goods);
@@ -148,28 +143,23 @@ class GoodsServiceTest {
     @Test
     @DisplayName("getGoodsById should throw GoodsNotFoundException when not found")
     void getGoodsById_ShouldThrowException_WhenNotFound() {
-        // Arrange
         when(goodsRepository.findById(goodsId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(GoodsNotFoundException.class, () -> goodsService.getGoodsById(goodsId));
         verify(goodsRepository, times(1)).findById(goodsId);
         verify(goodsMapper, never()).toDto(any());
     }
 
     @Test
-    @DisplayName("createGoods should create and return new goods")
+    @DisplayName("createGoods should create and return a new goods DTO")
     void createGoods_ShouldCreateAndReturnGoods() {
-        // Arrange
         when(goodsRepository.existsByArt(goodsDTO.getArt())).thenReturn(false);
         when(goodsMapper.toEntity(goodsDTO)).thenReturn(goods);
         when(goodsRepository.save(goods)).thenReturn(goods);
         when(goodsMapper.toDto(goods)).thenReturn(goodsDTO);
 
-        // Act
         GoodsDTO result = goodsService.createGoods(goodsDTO);
 
-        // Assert
         assertEquals(goodsDTO, result);
         verify(goodsRepository, times(1)).existsByArt(goodsDTO.getArt());
         verify(goodsMapper, times(1)).toEntity(goodsDTO);
@@ -178,63 +168,87 @@ class GoodsServiceTest {
     }
 
     @Test
-    @DisplayName("createGoods should throw IllegalArgumentException when art exists")
+    @DisplayName("createGoods should throw IllegalArgumentException when goods ART already exists")
     void createGoods_ShouldThrowException_WhenArtExists() {
-        // Arrange
         when(goodsRepository.existsByArt(goodsDTO.getArt())).thenReturn(true);
 
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> goodsService.createGoods(goodsDTO));
         verify(goodsRepository, times(1)).existsByArt(goodsDTO.getArt());
-        verify(goodsMapper, never()).toEntity(any());
-        verify(goodsRepository, never()).save(any());
+        // ВИПРАВЛЕННЯ: toEntity принимает GoodsDTO, save принимает Goods
+        verify(goodsMapper, never()).toEntity(any(GoodsDTO.class)); // <--- ИЗМЕНЕНИЕ: Указываем GoodsDTO.class
+        verify(goodsRepository, never()).save(any(Goods.class)); // <--- ИЗМЕНЕНИЕ: Указываем Goods.class
     }
 
     @Test
-    @DisplayName("updateGoods should update and return updated goods")
+    @DisplayName("updateGoods should update and return updated goods DTO")
     void updateGoods_ShouldUpdateAndReturnGoods() {
-        // Arrange
         GoodsDTO updatedDTO = new GoodsDTO();
         updatedDTO.setId(goodsId);
         updatedDTO.setArt("ART-002");
         updatedDTO.setName("Updated Mouse");
+        updatedDTO.setDescription("A high-precision updated wireless mouse.");
         updatedDTO.setPrice(new BigDecimal("1999.99"));
-        updatedDTO.setGoodsStatus("ACTIVE");
-        updatedDTO.setDiscountStatus("ACTIVE");
+        updatedDTO.setMainImageUrl("https://example.com/images/updated-mouse.jpg");
+        updatedDTO.setStock(130);
+        updatedDTO.setReviewsCount(50);
+        updatedDTO.setShopId(goods.getShopId());
+        updatedDTO.setCategoryId(categoryId);
+        updatedDTO.setGoodsStatus(Goods.GoodsStatus.ACTIVE);
+        updatedDTO.setDiscountStatus(Goods.DiscountStatus.ACTIVE);
+        updatedDTO.setDiscountValue(new BigDecimal("100.00"));
+        updatedDTO.setRating(5);
+        updatedDTO.setSlug("updated-wireless-mouse-123");
+        updatedDTO.setMetaTitle("Updated Wireless Mouse - Better Price");
+        updatedDTO.setMetaDescription("High-quality updated wireless mouse at a better price.");
+        updatedDTO.setCreatedAt(goods.getCreatedAt());
+        updatedDTO.setUpdatedAt(Instant.now());
+        updatedDTO.setAdditionalImages(new ArrayList<>());
 
-        Goods updatedGoods = new Goods();
-        updatedGoods.setId(goodsId);
-        updatedGoods.setArt("ART-002");
-        updatedGoods.setName("Updated Mouse");
-        updatedGoods.setPrice(new BigDecimal("1999.99"));
-        updatedGoods.setGoodsStatus(Goods.GoodsStatus.ACTIVE);
-        updatedGoods.setDiscountStatus(Goods.DiscountStatus.ACTIVE);
+
+        Goods updatedGoodsEntity = new Goods();
+        updatedGoodsEntity.setId(goodsId);
+        updatedGoodsEntity.setArt("ART-002");
+        updatedGoodsEntity.setName("Updated Mouse");
+        updatedGoodsEntity.setDescription("A high-precision updated wireless mouse.");
+        updatedGoodsEntity.setPrice(new BigDecimal("1999.99"));
+        updatedGoodsEntity.setMainImageUrl("https://example.com/images/updated-mouse.jpg");
+        updatedGoodsEntity.setStock(130);
+        updatedGoodsEntity.setReviewsCount(50);
+        updatedGoodsEntity.setShopId(goods.getShopId());
+        updatedGoodsEntity.setCategory(category);
+        updatedGoodsEntity.setGoodsStatus(Goods.GoodsStatus.ACTIVE);
+        updatedGoodsEntity.setDiscountStatus(Goods.DiscountStatus.ACTIVE);
+        updatedGoodsEntity.setDiscountValue(new BigDecimal("100.00"));
+        updatedGoodsEntity.setRating(5);
+        updatedGoodsEntity.setSlug("updated-wireless-mouse-123");
+        updatedGoodsEntity.setMetaTitle("Updated Wireless Mouse - Better Price");
+        updatedGoodsEntity.setMetaDescription("High-quality updated wireless mouse at a better price.");
+        updatedGoodsEntity.setCreatedAt(goods.getCreatedAt());
+        updatedGoodsEntity.setUpdatedAt(Instant.now());
+        updatedGoodsEntity.setAdditionalImages(new ArrayList<>());
+
 
         when(goodsRepository.findById(goodsId)).thenReturn(Optional.of(goods));
-        when(goodsRepository.existsByArt("ART-002")).thenReturn(false);
-        when(goodsMapper.toEntity(updatedDTO)).thenReturn(updatedGoods);
-        when(goodsRepository.save(updatedGoods)).thenReturn(updatedGoods);
-        when(goodsMapper.toDto(updatedGoods)).thenReturn(updatedDTO);
+        when(goodsRepository.existsByArt(updatedDTO.getArt())).thenReturn(false);
+        when(goodsMapper.toEntity(updatedDTO)).thenReturn(updatedGoodsEntity);
+        when(goodsRepository.save(updatedGoodsEntity)).thenReturn(updatedGoodsEntity);
+        when(goodsMapper.toDto(updatedGoodsEntity)).thenReturn(updatedDTO);
 
-        // Act
         GoodsDTO result = goodsService.updateGoods(goodsId, updatedDTO);
 
-        // Assert
         assertEquals(updatedDTO, result);
         verify(goodsRepository, times(1)).findById(goodsId);
-        verify(goodsRepository, times(1)).existsByArt("ART-002");
+        verify(goodsRepository, times(1)).existsByArt(updatedDTO.getArt());
         verify(goodsMapper, times(1)).toEntity(updatedDTO);
-        verify(goodsRepository, times(1)).save(updatedGoods);
-        verify(goodsMapper, times(1)).toDto(updatedGoods);
+        verify(goodsRepository, times(1)).save(updatedGoodsEntity);
+        verify(goodsMapper, times(1)).toDto(updatedGoodsEntity);
     }
 
     @Test
-    @DisplayName("updateGoods should throw GoodsNotFoundException when not found")
+    @DisplayName("updateGoods should throw GoodsNotFoundException when goods to update are not found")
     void updateGoods_ShouldThrowException_WhenNotFound() {
-        // Arrange
         when(goodsRepository.findById(goodsId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(GoodsNotFoundException.class, () -> goodsService.updateGoods(goodsId, goodsDTO));
         verify(goodsRepository, times(1)).findById(goodsId);
         verify(goodsRepository, never()).existsByArt(any());
@@ -242,62 +256,85 @@ class GoodsServiceTest {
     }
 
     @Test
+    @DisplayName("updateGoods should throw IllegalArgumentException when new ART already exists for another goods")
+    void updateGoods_ShouldThrowException_WhenNewArtExistsForOtherGoods() {
+        GoodsDTO updatedDTOAttemptingExistingArt = new GoodsDTO();
+        updatedDTOAttemptingExistingArt.setId(goodsId);
+        updatedDTOAttemptingExistingArt.setArt("EXISTING-ART-IN-DB");
+        updatedDTOAttemptingExistingArt.setName("Attempt to use existing ART");
+        updatedDTOAttemptingExistingArt.setPrice(new BigDecimal("100.00"));
+        updatedDTOAttemptingExistingArt.setGoodsStatus(Goods.GoodsStatus.ACTIVE);
+        updatedDTOAttemptingExistingArt.setDiscountStatus(Goods.DiscountStatus.NONE);
+        updatedDTOAttemptingExistingArt.setShopId(goods.getShopId());
+        updatedDTOAttemptingExistingArt.setCategoryId(categoryId);
+        updatedDTOAttemptingExistingArt.setMainImageUrl("http://some.url/img.jpg");
+        updatedDTOAttemptingExistingArt.setAdditionalImages(new ArrayList<>());
+
+
+        when(goodsRepository.findById(goodsId)).thenReturn(Optional.of(goods));
+        when(goodsRepository.existsByArt("EXISTING-ART-IN-DB")).thenReturn(true);
+
+
+        assertThrows(IllegalArgumentException.class, () -> goodsService.updateGoods(goodsId, updatedDTOAttemptingExistingArt));
+
+        verify(goodsRepository, times(1)).findById(goodsId);
+        verify(goodsRepository, times(1)).existsByArt("EXISTING-ART-IN-DB");
+        // ВИПРАВЛЕННЯ: toEntity принимает GoodsDTO, save принимает Goods
+        verify(goodsMapper, never()).toEntity(any(GoodsDTO.class)); // <--- ИЗМЕНЕНИЕ: Указываем GoodsDTO.class
+        verify(goodsRepository, never()).save(any(Goods.class)); // <--- ИЗМЕНЕНИЕ: Указываем Goods.class
+    }
+
+
+    @Test
     @DisplayName("deleteGoods should delete goods when found")
     void deleteGoods_ShouldDeleteGoods_WhenFound() {
-        // Arrange
         when(goodsRepository.findById(goodsId)).thenReturn(Optional.of(goods));
         doNothing().when(goodsRepository).deleteById(goodsId);
 
-        // Act
         goodsService.deleteGoods(goodsId);
 
-        // Assert
         verify(goodsRepository, times(1)).findById(goodsId);
         verify(goodsRepository, times(1)).deleteById(goodsId);
     }
 
     @Test
-    @DisplayName("deleteGoods should throw GoodsNotFoundException when not found")
+    @DisplayName("deleteGoods should throw GoodsNotFoundException when goods to delete are not found")
     void deleteGoods_ShouldThrowException_WhenNotFound() {
-        // Arrange
         when(goodsRepository.findById(goodsId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(GoodsNotFoundException.class, () -> goodsService.deleteGoods(goodsId));
         verify(goodsRepository, times(1)).findById(goodsId);
         verify(goodsRepository, never()).deleteById(any());
     }
 
     @Test
-    @DisplayName("searchGoods should return matching goods")
+    @DisplayName("searchGoods should return matching goods DTOs based on criteria")
     void searchGoods_ShouldReturnMatchingGoods() {
-        // Arrange
         List<Goods> goodsList = Collections.singletonList(goods);
         List<GoodsDTO> expectedDTOs = Collections.singletonList(goodsDTO);
 
+        // Уточняем тип дженерика для Specification
         when(goodsRepository.findAll(any(Specification.class))).thenReturn(goodsList);
         when(goodsMapper.toDto(goods)).thenReturn(goodsDTO);
 
-        // Act
         List<GoodsDTO> result = goodsService.searchGoods(null, "ART-001", null, null, null, null, null, null, null, null, null);
 
-        // Assert
         assertEquals(expectedDTOs, result);
+        // Уточняем тип дженерика для Specification
         verify(goodsRepository, times(1)).findAll(any(Specification.class));
         verify(goodsMapper, times(1)).toDto(goods);
     }
 
     @Test
-    @DisplayName("searchGoods should return empty list when no matches")
+    @DisplayName("searchGoods should return an empty list when no matches are found")
     void searchGoods_ShouldReturnEmptyList_WhenNoMatches() {
-        // Arrange
+        // Уточняем тип дженерика для Specification
         when(goodsRepository.findAll(any(Specification.class))).thenReturn(Collections.emptyList());
 
-        // Act
-        List<GoodsDTO> result = goodsService.searchGoods(null, "NonExistent", null, null, null, null, null, null, null, null, null);
+        List<GoodsDTO> result = goodsService.searchGoods(null, "NonExistentArt", null, null, null, null, null, null, null, null, null);
 
-        // Assert
         assertTrue(result.isEmpty());
+        // Уточняем тип дженерика для Specification
         verify(goodsRepository, times(1)).findAll(any(Specification.class));
         verify(goodsMapper, never()).toDto(any());
     }

@@ -3,8 +3,11 @@ package com.teamchallenge.easybuy.models.goods;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -17,6 +20,7 @@ import java.util.UUID;
         @Index(name = "idx_goods_images_goods_id", columnList = "goods_id")
 })
 @Schema(description = "Represents an additional image associated with a product.")
+@ToString(exclude = "goods")
 public class GoodsImage {
 
     @Id
@@ -26,13 +30,34 @@ public class GoodsImage {
     private UUID id;
 
     @NotNull
-    @Column(name = "image_url", nullable = false)
+    @Size(max = 2083)
+    @Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
+    @Column(name = "image_url", nullable = false, length = 2083)
     @Schema(description = "URL of the image", example = "https://example.com/images/product123_2.jpg")
     private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Column(name = "display_order")
+    private Integer displayOrder;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "goods_id", nullable = false)
     @NotNull
     @Schema(description = "The product this image belongs to", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
     private Goods goods;
+
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
 }

@@ -42,7 +42,7 @@ public class GoodsDTO {
     private String mainImageUrl;
 
     @NotNull
-    @PositiveOrZero(message = "Stock must be 0 or greater")
+    @PositiveOrZero(message = "must be greater than or equal to 0")
     @Schema(description = "Current stock level", example = "120")
     private Integer stock;
 
@@ -54,6 +54,7 @@ public class GoodsDTO {
     @Schema(description = "ID of the shop owning the product", example = "a1b2c3d4-5678-90ef-ghij-klmnopqrstuv")
     private UUID shopId;
 
+    @NotNull
     @Schema(description = "Category ID this product belongs to", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
     private UUID categoryId;
 
