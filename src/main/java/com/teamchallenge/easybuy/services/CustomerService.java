@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.services;
 
 import com.teamchallenge.easybuy.dto.AddressDto;
 import com.teamchallenge.easybuy.dto.CustomerDto;
+import com.teamchallenge.easybuy.mapper.AddressMapper;
 import com.teamchallenge.easybuy.mapper.UserMapper;
 import com.teamchallenge.easybuy.models.Address;
 import com.teamchallenge.easybuy.models.User;
@@ -18,6 +19,7 @@ public class CustomerService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AddressService addressService;
+    private final AddressMapper addressMapper;
 
     public CustomerDto getUserInfo() {
         return userMapper.toDto(getUser());
@@ -30,13 +32,28 @@ public class CustomerService {
         user.setName(customerDto.getName());
         user.setBirthday(customerDto.getBirthday());
 
+        return userMapper.toDto(userRepository.save(user));
+    }
+
+    public AddressDto updateAddress(AddressDto addressDto) {
         Address address;
-        if (customerDto.getAddress() != null) {
-            address = addressService.updateAddress(customerDto.getAddress());
+        if (addressDto != null) {
+            User  user = getUser();
+            Address oldAddress = user.getAddress();
+            if (oldAddress == null) {
+                oldAddress = new Address();
+            }
+            oldAddress.setCity(addressDto.getCity());
+            oldAddress.setCountry(addressDto.getCountry());
+            oldAddress.setStreet(addressDto.getStreet());
+            address = addressService.createAddress(oldAddress);
             user.setAddress(address);
+            userRepository.save(user);
+        } else {
+            throw new IllegalStateException("Address not found");
         }
 
-        return userMapper.toDto(userRepository.save(user));
+        return addressMapper.toDto(address);
     }
 
     public void deleteProfile() {
