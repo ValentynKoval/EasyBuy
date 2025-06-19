@@ -43,16 +43,18 @@ public class AuthenticationService {
         }
 
         if (request.getStoreName() == null && request.getRole().equals("SELLER") ||
-        request.getStoreName() != null && request.getRole().equals("CUSTOMER")) {
+        request.getStoreName() != null && request.getRole().equals("CUSTOMER") ||
+        request.getStoreName() != null && request.getRole().equals("ADMIN") ||
+        request.getStoreName() != null && request.getRole().equals("MANAGER")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect role");
         }
 
-        User user = User.builder()
+        User user = userRepository.save(User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
                 .role(Role.valueOf(request.getRole()))
-                .build();
+                .build());
 
         if (request.getRole().equals("SELLER")) {
             shopService.createShop(user, request.getStoreName());
