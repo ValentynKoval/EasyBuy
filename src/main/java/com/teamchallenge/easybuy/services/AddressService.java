@@ -19,6 +19,10 @@ public class AddressService {
                 .build());
     }
 
+    public Address createAddress(Address address) {
+        return addressRepository.save(address);
+    }
+
     public Address updateAddress(AddressDto addressDto) {
         Address address = addressRepository.findById(addressDto.getId())
                 .orElseThrow(() -> new IllegalStateException("Address not found"));
