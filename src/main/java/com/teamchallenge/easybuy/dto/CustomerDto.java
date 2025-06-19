@@ -16,5 +16,4 @@ public class CustomerDto {
     private String phoneNumber;
     private String name;
     private LocalDateTime birthday;
-    private AddressDto address;
 }
