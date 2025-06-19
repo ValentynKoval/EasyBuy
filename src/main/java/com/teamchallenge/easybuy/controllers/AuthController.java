@@ -1,9 +1,6 @@
 package com.teamchallenge.easybuy.controllers;
 
-import com.teamchallenge.easybuy.dto.AuthResponseDto;
-import com.teamchallenge.easybuy.dto.LoginRequestDto;
-import com.teamchallenge.easybuy.dto.RefreshTokenRequestDto;
-import com.teamchallenge.easybuy.dto.RegisterRequestDto;
+import com.teamchallenge.easybuy.dto.*;
 import com.teamchallenge.easybuy.models.User;
 import com.teamchallenge.easybuy.services.AuthenticationService;
 import com.teamchallenge.easybuy.services.EmailConfirmationService;
@@ -228,6 +225,27 @@ public class AuthController {
     @GetMapping("/logout")
     public ResponseEntity<?> logout() {
         authenticationService.logout();
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Change password in account", description = "Change of account's password")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Changed success"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Passwords do not match"
+            )
+    })
+    @PutMapping("/change_password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto request) {
+        try {
+            authenticationService.changePassword(request);
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).body(ex.getMessage());
+        }
         return ResponseEntity.ok().build();
     }
 }
