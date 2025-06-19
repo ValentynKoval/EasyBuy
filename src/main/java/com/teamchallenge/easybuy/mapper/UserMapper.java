@@ -4,7 +4,7 @@ import com.teamchallenge.easybuy.dto.CustomerDto;
 import com.teamchallenge.easybuy.models.User;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring", uses = AddressMapper.class)
+@Mapper(componentModel = "spring")
 public interface UserMapper {
     CustomerDto toDto(User user);
     User toEntity(CustomerDto dto);
