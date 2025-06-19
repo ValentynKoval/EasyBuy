@@ -1,6 +1,7 @@
 package com.teamchallenge.easybuy.services;
 
 import com.teamchallenge.easybuy.dto.AuthResponseDto;
+import com.teamchallenge.easybuy.dto.ChangePasswordDto;
 import com.teamchallenge.easybuy.dto.LoginRequestDto;
 import com.teamchallenge.easybuy.dto.RegisterRequestDto;
 import com.teamchallenge.easybuy.models.Role;
@@ -105,15 +106,26 @@ public class AuthenticationService {
     }
 
     public void logout() {
+        tokenService.revokedAllTokensByUser(getUser());
+    }
+
+    private User getUser() {
         String username = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getName();
 
-        User user = userRepository.findByEmail(username)
+        return userRepository.findByEmail(username)
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found: " + username));
+    }
 
-        tokenService.revokedAllTokensByUser(user);
+    public void changePassword(ChangePasswordDto request) {
+        User user = getUser();
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
+        }
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
     }
 }
