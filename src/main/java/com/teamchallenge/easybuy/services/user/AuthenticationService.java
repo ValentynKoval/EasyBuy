@@ -1,13 +1,14 @@
-package com.teamchallenge.easybuy.services;
+package com.teamchallenge.easybuy.services.user;
 
-import com.teamchallenge.easybuy.dto.AuthResponseDto;
-import com.teamchallenge.easybuy.dto.ChangePasswordDto;
-import com.teamchallenge.easybuy.dto.LoginRequestDto;
-import com.teamchallenge.easybuy.dto.RegisterRequestDto;
-import com.teamchallenge.easybuy.models.Role;
-import com.teamchallenge.easybuy.models.Token;
-import com.teamchallenge.easybuy.models.User;
-import com.teamchallenge.easybuy.repo.UserRepository;
+import com.teamchallenge.easybuy.dto.user.AuthResponseDto;
+import com.teamchallenge.easybuy.dto.user.ChangePasswordDto;
+import com.teamchallenge.easybuy.dto.user.LoginRequestDto;
+import com.teamchallenge.easybuy.dto.user.RegisterRequestDto;
+import com.teamchallenge.easybuy.models.*;
+import com.teamchallenge.easybuy.models.user.Role;
+import com.teamchallenge.easybuy.models.user.Token;
+import com.teamchallenge.easybuy.models.user.User;
+import com.teamchallenge.easybuy.repo.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import com.teamchallenge.easybuy.models.Customer;
 
 /**
  * Service for handling user registration and authentication.
@@ -33,35 +35,47 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
-    private final ShopService shopService;
 
-    public User register(RegisterRequestDto request) {
-        if (userRepository.existsByEmailAndPhoneNumber(request.getEmail(), request.getPhoneNumber()))
+    public User register(RegisterRequestDto registerRequestDto) {
+        if (userRepository.existsByEmailAndPhoneNumber(registerRequestDto.getEmail(), registerRequestDto.getPhoneNumber()))
             throw new IllegalStateException("The user with this email or phone number is already registered");
 
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
+        if (!registerRequestDto.getPassword().equals(registerRequestDto.getConfirmPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
         }
 
-        if (request.getStoreName() == null && request.getRole().equals("SELLER") ||
-        request.getStoreName() != null && request.getRole().equals("CUSTOMER") ||
-        request.getStoreName() != null && request.getRole().equals("ADMIN") ||
-        request.getStoreName() != null && request.getRole().equals("MANAGER")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect role");
+        User user;
+        switch (Role.valueOf(registerRequestDto.getRole())) {
+            case CUSTOMER:
+                user = Customer.builder()
+                    .email(registerRequestDto.getEmail())
+                    .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                    .phoneNumber(registerRequestDto.getPhoneNumber())
+                    .role(Role.CUSTOMER)
+                    .build();
+                break;
+            case SELLER:
+                user = Seller.builder()
+                        .email(registerRequestDto.getEmail())
+                        .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                        .phoneNumber(registerRequestDto.getPhoneNumber())
+                        .role(Role.SELLER)
+                        .storeName(registerRequestDto.getStoreName())
+                        .build();
+                break;
+            case MANAGER:
+                //Добавить поиск по названию магазина и привязать менеджера к магазину
+                user = Manager.builder()
+                    .email(registerRequestDto.getEmail())
+                    .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                    .phoneNumber(registerRequestDto.getPhoneNumber())
+                    .role(Role.MANAGER)
+                    .build();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid role");
         }
-
-        User user = userRepository.save(User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.getPhoneNumber())
-                .role(Role.valueOf(request.getRole()))
-                .build());
-
-        if (request.getRole().equals("SELLER")) {
-            shopService.createShop(user, request.getStoreName());
-        }
-
-        return user;
+        return userRepository.save(user);
     }
 
     public ResponseEntity<?> authenticate(LoginRequestDto request) {
