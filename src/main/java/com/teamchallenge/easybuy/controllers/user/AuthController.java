@@ -1,9 +1,9 @@
-package com.teamchallenge.easybuy.controllers;
+package com.teamchallenge.easybuy.controllers.user;
 
-import com.teamchallenge.easybuy.dto.*;
-import com.teamchallenge.easybuy.models.User;
-import com.teamchallenge.easybuy.services.AuthenticationService;
-import com.teamchallenge.easybuy.services.EmailConfirmationService;
+import com.teamchallenge.easybuy.dto.user.*;
+import com.teamchallenge.easybuy.models.user.User;
+import com.teamchallenge.easybuy.services.user.AuthenticationService;
+import com.teamchallenge.easybuy.services.user.EmailConfirmationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -245,6 +246,8 @@ public class AuthController {
             authenticationService.changePassword(request);
         } catch (ResponseStatusException ex) {
             return ResponseEntity.status(ex.getStatusCode()).body(ex.getMessage());
+        } catch (UsernameNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
         }
         return ResponseEntity.ok().build();
     }
