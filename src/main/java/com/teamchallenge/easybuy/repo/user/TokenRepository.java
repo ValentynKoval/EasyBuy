@@ -1,7 +1,7 @@
-package com.teamchallenge.easybuy.repo;
+package com.teamchallenge.easybuy.repo.user;
 
-import com.teamchallenge.easybuy.models.Token;
-import com.teamchallenge.easybuy.models.User;
+import com.teamchallenge.easybuy.models.user.Token;
+import com.teamchallenge.easybuy.models.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
