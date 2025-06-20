@@ -68,8 +68,9 @@ public class Goods {
     @Schema(description = "Number of reviews for the product", example = "45")
     private Integer reviewsCount;
 
-    @NotNull
-    @Column(name = "shopId", nullable = false)
+//    todo uncommented wia impl shop
+//    @NotNull , nullable = false
+    @Column(name = "shopId")
     @Schema(description = "ID of the shop owning the product", example = "a1b2c3d4-5678-90ef-ghij-klmnopqrstuv")
     private UUID shopId;
 

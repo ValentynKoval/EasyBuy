@@ -28,9 +28,22 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    private static final String[] AUTH_WHITELIST = {"/api/auth/login", "/api/auth/register", "/api/auth/refresh",
-            "/api/auth/confirm", "/api/auth/resend-confirmation", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
-            "/swagger-ui/index.html", "/v3/api-docs.yaml", "/webjars/**"};
+    private static final String[] AUTH_WHITELIST = {"/api/auth/login",
+            "/api/auth/register",
+            "/api/auth/refresh",
+            "/api/auth/confirm",
+            "/api/auth/resend-confirmation",
+            "/api/goods/**",
+            "/api/categories/**",
+            "/api/goods-images/**",
+            "/v3/api-docs/**",
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/swagger-ui/index.html",
+            "/v3/api-docs.yaml",
+            "/webjars/**",
+            "/api/goods-images/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
