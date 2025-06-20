@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.services;
+package com.teamchallenge.easybuy.services.user;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
