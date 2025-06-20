@@ -1,6 +1,6 @@
 package com.teamchallenge.easybuy.configs;
 
-import com.teamchallenge.easybuy.services.UserDetailsServiceImpl;
+import com.teamchallenge.easybuy.services.user.UserDetailsServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("ADMIN", "CUSTOMER", "SELLER")
                         .requestMatchers("/api/seller/**").hasAnyRole("ADMIN", "SELLER")
+                        .requestMatchers("/api/customer/**").hasAnyRole("ADMIN", "CUSTOMER")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
