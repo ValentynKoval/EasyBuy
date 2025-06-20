@@ -1,78 +1,90 @@
 package com.teamchallenge.easybuy.services;
 
 import com.teamchallenge.easybuy.dto.AddressDto;
-import com.teamchallenge.easybuy.dto.CustomerDto;
+import com.teamchallenge.easybuy.dto.CustomerProfileDto;
 import com.teamchallenge.easybuy.mapper.AddressMapper;
-import com.teamchallenge.easybuy.mapper.UserMapper;
+import com.teamchallenge.easybuy.mapper.CustomerMapper;
 import com.teamchallenge.easybuy.models.Address;
-import com.teamchallenge.easybuy.models.User;
-import com.teamchallenge.easybuy.repo.UserRepository;
+import com.teamchallenge.easybuy.models.Customer;
+import com.teamchallenge.easybuy.repo.CustomerRepository;
+import com.teamchallenge.easybuy.services.user.EmailConfirmationService;
+import com.teamchallenge.easybuy.services.user.TokenService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
-
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final AddressService addressService;
+    private final CustomerRepository customerRepository;
+    private final CustomerMapper customerMapper;
     private final AddressMapper addressMapper;
+    private final EmailConfirmationService emailConfirmationService;
+    private final TokenService tokenService;
 
-    public CustomerDto getUserInfo() {
-        return userMapper.toDto(getUser());
+    public Map<String, Object> getCustomerProfile() {
+        Customer customer = getCustomer();
+        Map<String, Object> result = new HashMap<>();
+        result.put("profile", customerMapper.toDto(customer));
+        result.put("address", addressMapper.toDto(customer.getAddress()));
+        return result;
     }
 
-    public CustomerDto updateProfile(CustomerDto customerDto) {
-        User user = getUser();
-        user.setEmail(customerDto.getEmail());
-        user.setPhoneNumber(customerDto.getPhoneNumber());
-        user.setName(customerDto.getName());
-        user.setBirthday(customerDto.getBirthday());
-
-        return userMapper.toDto(userRepository.save(user));
-    }
-
-    public AddressDto updateAddress(AddressDto addressDto) {
-        Address address;
-        if (addressDto != null) {
-            User  user = getUser();
-            Address oldAddress = user.getAddress();
-            if (oldAddress == null) {
-                oldAddress = new Address();
-            }
-            oldAddress.setCity(addressDto.getCity());
-            oldAddress.setCountry(addressDto.getCountry());
-            oldAddress.setStreet(addressDto.getStreet());
-            address = addressService.createAddress(oldAddress);
-            user.setAddress(address);
-            userRepository.save(user);
-        } else {
-            throw new IllegalStateException("Address not found");
+    public CustomerProfileDto updateCustomerProfile(CustomerProfileDto customerProfile, HttpServletRequest request) {
+        Customer customer = getCustomer();
+        customer.setName(customerProfile.getName());
+        customer.setBirthday(customerProfile.getBirthday());
+        customer.setPhoneNumber(customerProfile.getPhoneNumber());
+        if (!customer.getEmail().equals(customerProfile.getEmail())) {
+            customer.setEmail(customerProfile.getEmail());
+            customer.setEmailVerified(false);
+            String baseUrl = ServletUriComponentsBuilder
+                    .fromRequestUri(request)
+                    .replacePath(null)
+                    .build()
+                    .toUriString();
+            emailConfirmationService.sendConfirmationEmail(customer, baseUrl);
         }
 
-        return addressMapper.toDto(address);
+        return customerMapper.toDto(customerRepository.save(customer));
     }
 
-    public void deleteProfile() {
-        User user = getUser();
-        if (user.getAddress() != null) {
-            addressService.deleteAddress(user.getAddress());
-            user.setAddress(null);
+    public AddressDto updateCustomerAddress(AddressDto addressDto) {
+        Customer customer = getCustomer();
+        Address address = customer.getAddress();
+        if  (address == null) {
+            address = new Address();
+            customer.setAddress(address);
         }
-        userRepository.delete(user);
+        address.setCity(addressDto.getCity());
+        address.setCountry(addressDto.getCountry());
+        address.setStreet(addressDto.getStreet());
+        Customer newCustomer = customerRepository.save(customer);
+        return addressMapper.toDto(newCustomer.getAddress());
     }
 
-    private User getUser() {
+    public void deleteCustomer() {
+        Customer customer = getCustomer();
+        tokenService.deleteAllTokensForUser(customer);
+        emailConfirmationService.deleteAllByUser(customer);
+        customerRepository.delete(customer);
+    }
+
+    private Customer getCustomer() {
         String username = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getName();
 
-        return userRepository.findByEmail(username)
+        return customerRepository.findByEmail(username)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found: " + username));
+                        new UsernameNotFoundException("Customer not found: " + username));
     }
+
 }
