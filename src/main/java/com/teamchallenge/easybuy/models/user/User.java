@@ -1,23 +1,23 @@
-package com.teamchallenge.easybuy.models;
+package com.teamchallenge.easybuy.models.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "user_type")
 @Data
 @Table(name = "users")
-@RequiredArgsConstructor
 @AllArgsConstructor
-@Builder
-public class User {
+@NoArgsConstructor
+@SuperBuilder
+public abstract class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false, updatable = false)
@@ -38,21 +38,11 @@ public class User {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "birthday")
-    private LocalDateTime birthday;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
-
-    @Column(name = "profile_picture")
-    private String profilePicture;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id")
-    private Address address;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
