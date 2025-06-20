@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.models;
+package com.teamchallenge.easybuy.models.user;
 
 public enum Role {
     CUSTOMER,
