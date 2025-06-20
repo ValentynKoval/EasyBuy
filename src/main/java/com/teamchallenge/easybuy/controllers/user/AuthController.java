@@ -249,6 +249,7 @@ public class AuthController {
         } catch (UsernameNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
         }
+
         return ResponseEntity.ok().build();
     }
 }
