@@ -23,6 +23,7 @@ import java.util.UUID;
 public class CategoryAttribute {
 
     @Id
+    @NotNull
     @GeneratedValue
     @Column(nullable = false, updatable = false)
     @Schema(description = "Unique ID of the attribute", example = "63f1c7de-89f1-44a3-8288-8bff5f9ad47a")
@@ -33,11 +34,13 @@ public class CategoryAttribute {
     @Schema(description = "Attribute name", example = "Color")
     private String name;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Schema(description = "Type of the attribute", example = "STRING")
     private AttributeType type;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id", nullable = false)
     @Schema(description = "Category this attribute belongs to", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
