@@ -6,6 +6,7 @@ import com.teamchallenge.easybuy.models.goods.category.Category;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public class GoodsSpecifications {
@@ -53,4 +54,42 @@ public class GoodsSpecifications {
     public static Specification<Goods> hasRating(Integer rating) {
         return (root, query, cb) -> rating == null ? null : cb.equal(root.get("rating"), rating);
     }
+
+    public static Specification<Goods> hasPriceBetween(BigDecimal min, BigDecimal max) {
+        return (root, query, cb) -> {
+            if (min == null && max == null) return null;
+            if (min != null && max != null) return cb.between(root.get("price"), min, max);
+            return min != null ? cb.greaterThanOrEqualTo(root.get("price"), min)
+                    : cb.lessThanOrEqualTo(root.get("price"), max);
+        };
+    }
+
+    public static Specification<Goods> hasSlugLike(String slug) {
+        return (root, query, cb) -> slug == null ? null : cb.like(root.get("slug"), "%" + slug + "%");
+    }
+
+    public static Specification<Goods> createdAtBetween(Instant from, Instant to) {
+        return (root, query, cb) -> {
+            if (from == null && to == null) return null;
+            if (from != null && to != null) return cb.between(root.get("createdAt"), from, to);
+            return from != null ? cb.greaterThanOrEqualTo(root.get("createdAt"), from)
+                    : cb.lessThanOrEqualTo(root.get("createdAt"), to);
+        };
+    }
+
+    public static Specification<Goods> updatedAtBetween(Instant from, Instant to) {
+        return (root, query, cb) -> {
+            if (from == null && to == null) return null;
+            if (from != null && to != null) return cb.between(root.get("updatedAt"), from, to);
+            return from != null ? cb.greaterThanOrEqualTo(root.get("updatedAt"), from)
+                    : cb.lessThanOrEqualTo(root.get("updatedAt"), to);
+        };
+    }
+    public static Specification<Goods> hasCategoryIn(Category... categories) {
+        return (root, query, cb) -> {
+            if (categories == null || categories.length == 0) return null;
+            return root.get("category").in(categories);
+        };
+    }
+
 }
