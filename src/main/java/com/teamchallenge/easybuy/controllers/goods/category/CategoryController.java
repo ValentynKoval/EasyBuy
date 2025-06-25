@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +53,7 @@ public class CategoryController {
     @Operation(summary = "Create a new category", responses = {
             @ApiResponse(responseCode = "201", description = "Successfully created", content = @Content(schema = @Schema(implementation = CategoryDTO.class)))
     })
-    public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryDTO dto) {
+    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO dto) {
         return ResponseEntity.status(201).body(categoryService.createCategory(dto));
     }
 
@@ -61,7 +62,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "200", description = "Successfully updated", content = @Content(schema = @Schema(implementation = CategoryDTO.class))),
             @ApiResponse(responseCode = "404", description = "Category not found")
     })
-    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable UUID id, @RequestBody CategoryDTO dto) {
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable UUID id, @Valid @RequestBody CategoryDTO dto) {
         return ResponseEntity.ok(categoryService.updateCategory(id, dto));
     }
 
