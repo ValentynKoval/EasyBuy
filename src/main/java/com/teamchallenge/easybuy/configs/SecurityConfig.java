@@ -35,12 +35,17 @@ public class SecurityConfig {
             "/api/auth/resend-confirmation",
             "/api/auth/forgot-password",
             "/api/auth/reset-password",
+            "/api/goods/**",
+            "/api/categories/**",
+            "/api/goods-images/**",
             "/v3/api-docs/**",
             "/swagger-ui.html",
             "/swagger-ui/**",
             "/swagger-ui/index.html",
             "/v3/api-docs.yaml",
-            "/webjars/**"};
+            "/webjars/**",
+            "/api/goods-images/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
