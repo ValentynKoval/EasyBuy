@@ -23,5 +23,7 @@ public class EmailConfirmationToken {
 
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
-    private boolean confirmed;
+
+    @Column(nullable = false)
+    private boolean confirmed = false;
 }
