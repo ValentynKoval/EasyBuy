@@ -5,10 +5,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Represents the value of a specific attribute for a product (goods).
+ * Represents the value of a specific attribute for a product (goods),
+ * supporting multiple data types.
  */
 @Entity
 @Table(name = "goods_attributes", indexes = {
@@ -31,15 +34,49 @@ public class GoodsAttributeValue {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "goods_id", nullable = false)
-    @Schema(description = "Goods that owns this attribute value", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
+    @Schema(description = "Goods that owns this attribute value")
     private Goods goods;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attribute_id", nullable = false)
-    @Schema(description = "Attribute definition this value belongs to", example = "63f1c7de-89f1-44a3-8288-8bff5f9ad47a")
+    @Schema(description = "Attribute definition this value belongs to")
     private CategoryAttribute attribute;
 
-    @Column(nullable = true)
-    @Schema(description = "Actual value of the attribute", example = "Red")
-    private String value;
+    @Column(name = "value_string")
+    private String valueString;
+
+    @Column(name = "value_number", precision = 12, scale = 2)
+    private BigDecimal valueNumber;
+
+    @Column(name = "value_boolean")
+    private Boolean valueBoolean;
+
+    @Column(name = "value_enum")
+    private String valueEnum;
+
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
+    @Transient
+    public Object getActualValue() {
+        return switch (attribute.getType()) {
+            case STRING -> valueString;
+            case NUMBER -> valueNumber;
+            case BOOLEAN -> valueBoolean;
+            case ENUM -> valueEnum;
+        };
+    }
 }
