@@ -29,7 +29,8 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     private static final String[] AUTH_WHITELIST = {"/api/auth/login", "/api/auth/register", "/api/auth/refresh",
-            "/api/auth/confirm", "/api/auth/resend-confirmation", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
+            "/api/auth/confirm", "/api/auth/resend-confirmation", "/api/auth/forgot-password", "/api/auth/reset-password",
+            "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
             "/swagger-ui/index.html", "/v3/api-docs.yaml", "/webjars/**"};
 
     @Bean
