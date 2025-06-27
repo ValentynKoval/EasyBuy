@@ -4,10 +4,7 @@ import com.teamchallenge.easybuy.dto.user.AuthResponseDto;
 import com.teamchallenge.easybuy.dto.user.ChangePasswordDto;
 import com.teamchallenge.easybuy.dto.user.LoginRequestDto;
 import com.teamchallenge.easybuy.dto.user.RegisterRequestDto;
-import com.teamchallenge.easybuy.models.*;
-import com.teamchallenge.easybuy.models.user.Role;
-import com.teamchallenge.easybuy.models.user.Token;
-import com.teamchallenge.easybuy.models.user.User;
+import com.teamchallenge.easybuy.models.user.*;
 import com.teamchallenge.easybuy.repo.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +17,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import com.teamchallenge.easybuy.models.Customer;
 
 /**
  * Service for handling user registration and authentication.
@@ -55,16 +51,16 @@ public class AuthenticationService {
                     .build();
                 break;
             case SELLER:
+                // todo add the creation of a store and assign a name to it
                 user = Seller.builder()
                         .email(registerRequestDto.getEmail())
                         .password(passwordEncoder.encode(registerRequestDto.getPassword()))
                         .phoneNumber(registerRequestDto.getPhoneNumber())
                         .role(Role.SELLER)
-                        .storeName(registerRequestDto.getStoreName())
                         .build();
                 break;
             case MANAGER:
-                //Добавить поиск по названию магазина и привязать менеджера к магазину
+                // todo add a search by store name and link the manager to the store
                 user = Manager.builder()
                     .email(registerRequestDto.getEmail())
                     .password(passwordEncoder.encode(registerRequestDto.getPassword()))
