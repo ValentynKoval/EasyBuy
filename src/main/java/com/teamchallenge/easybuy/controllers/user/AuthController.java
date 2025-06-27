@@ -4,6 +4,7 @@ import com.teamchallenge.easybuy.dto.user.*;
 import com.teamchallenge.easybuy.models.user.User;
 import com.teamchallenge.easybuy.services.user.AuthenticationService;
 import com.teamchallenge.easybuy.services.user.EmailConfirmationService;
+import com.teamchallenge.easybuy.services.user.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -29,6 +30,7 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final EmailConfirmationService emailConfirmationService;
+    private final PasswordResetService passwordResetService;
 
     @Operation(summary = "User registration", description = "Sends a link to confirm your email.")
     @ApiResponses(value = {
@@ -240,6 +242,7 @@ public class AuthController {
                     description = "Passwords do not match"
             )
     })
+
     @PutMapping("/change_password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto request) {
         try {
@@ -251,5 +254,26 @@ public class AuthController {
         }
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody EmailRequestDto email, HttpServletRequest request) {
+        String baseUrl = ServletUriComponentsBuilder
+                .fromRequestUri(request)
+                .replacePath(null)
+                .build()
+                .toUriString();
+        passwordResetService.sendResetLink(email.getEmail(), baseUrl);
+        return ResponseEntity.ok("A reset link has been sent to your email address, if one exists.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String token,
+                                                @Valid @RequestBody ChangePasswordDto request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
+        }
+        passwordResetService.resetPassword(token, request.getPassword());
+        return ResponseEntity.ok("Your password has been reset.");
     }
 }
