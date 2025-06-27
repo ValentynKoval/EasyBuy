@@ -1,6 +1,6 @@
-package com.teamchallenge.easybuy.services;
+package com.teamchallenge.easybuy.services.user;
 
-import com.teamchallenge.easybuy.repo.UserRepository;
+import com.teamchallenge.easybuy.repo.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

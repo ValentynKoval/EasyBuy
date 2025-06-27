@@ -1,6 +1,6 @@
 package com.teamchallenge.easybuy.configs;
 
-import com.teamchallenge.easybuy.models.User;
+import com.teamchallenge.easybuy.models.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;

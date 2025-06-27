@@ -1,12 +1,11 @@
-package com.teamchallenge.easybuy.services;
+package com.teamchallenge.easybuy.services.user;
 
-import com.teamchallenge.easybuy.dto.AuthResponseDto;
-import com.teamchallenge.easybuy.dto.LoginRequestDto;
-import com.teamchallenge.easybuy.dto.RegisterRequestDto;
-import com.teamchallenge.easybuy.models.Role;
-import com.teamchallenge.easybuy.models.Token;
-import com.teamchallenge.easybuy.models.User;
-import com.teamchallenge.easybuy.repo.UserRepository;
+import com.teamchallenge.easybuy.dto.user.AuthResponseDto;
+import com.teamchallenge.easybuy.dto.user.ChangePasswordDto;
+import com.teamchallenge.easybuy.dto.user.LoginRequestDto;
+import com.teamchallenge.easybuy.dto.user.RegisterRequestDto;
+import com.teamchallenge.easybuy.models.user.*;
+import com.teamchallenge.easybuy.repo.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +17,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDateTime;
 
 /**
  * Service for handling user registration and authentication.
@@ -35,22 +32,46 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
 
-    public User register(RegisterRequestDto request) {
-        if (userRepository.existsByEmail(request.getEmail()))
-            throw new IllegalStateException("The user with this email is already registered");
+    public User register(RegisterRequestDto registerRequestDto) {
+        if (userRepository.existsByEmailAndPhoneNumber(registerRequestDto.getEmail(), registerRequestDto.getPhoneNumber()))
+            throw new IllegalStateException("The user with this email or phone number is already registered");
 
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
+        if (!registerRequestDto.getPassword().equals(registerRequestDto.getConfirmPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
         }
 
-        return userRepository.save(User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.getPhoneNumber())
-                .createdAt(LocalDateTime.now())
-                .isEmailVerified(false)
-                .role(Role.valueOf(request.getRole()))
-                .build());
+        User user;
+        switch (Role.valueOf(registerRequestDto.getRole())) {
+            case CUSTOMER:
+                user = Customer.builder()
+                    .email(registerRequestDto.getEmail())
+                    .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                    .phoneNumber(registerRequestDto.getPhoneNumber())
+                    .role(Role.CUSTOMER)
+                    .build();
+                break;
+            case SELLER:
+                // todo add the creation of a store and assign a name to it
+                user = Seller.builder()
+                        .email(registerRequestDto.getEmail())
+                        .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                        .phoneNumber(registerRequestDto.getPhoneNumber())
+                        .role(Role.SELLER)
+                        .build();
+                break;
+            case MANAGER:
+                // todo add a search by store name and link the manager to the store
+                user = Manager.builder()
+                    .email(registerRequestDto.getEmail())
+                    .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                    .phoneNumber(registerRequestDto.getPhoneNumber())
+                    .role(Role.MANAGER)
+                    .build();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid role");
+        }
+        return userRepository.save(user);
     }
 
     public ResponseEntity<?> authenticate(LoginRequestDto request) {
@@ -95,15 +116,26 @@ public class AuthenticationService {
     }
 
     public void logout() {
+        tokenService.revokedAllTokensByUser(getUser());
+    }
+
+    private User getUser() {
         String username = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getName();
 
-        User user = userRepository.findByEmail(username)
+        return userRepository.findByEmail(username)
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found: " + username));
+    }
 
-        tokenService.revokedAllTokensByUser(user);
+    public void changePassword(ChangePasswordDto request) {
+        User user = getUser();
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
+        }
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
     }
 }

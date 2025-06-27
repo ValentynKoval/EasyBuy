@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.dto;
+package com.teamchallenge.easybuy.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

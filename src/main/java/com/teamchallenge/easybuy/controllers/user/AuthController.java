@@ -1,12 +1,10 @@
-package com.teamchallenge.easybuy.controllers;
+package com.teamchallenge.easybuy.controllers.user;
 
-import com.teamchallenge.easybuy.dto.AuthResponseDto;
-import com.teamchallenge.easybuy.dto.LoginRequestDto;
-import com.teamchallenge.easybuy.dto.RefreshTokenRequestDto;
-import com.teamchallenge.easybuy.dto.RegisterRequestDto;
-import com.teamchallenge.easybuy.models.User;
-import com.teamchallenge.easybuy.services.AuthenticationService;
-import com.teamchallenge.easybuy.services.EmailConfirmationService;
+import com.teamchallenge.easybuy.dto.user.*;
+import com.teamchallenge.easybuy.models.user.User;
+import com.teamchallenge.easybuy.services.user.AuthenticationService;
+import com.teamchallenge.easybuy.services.user.EmailConfirmationService;
+import com.teamchallenge.easybuy.services.user.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -18,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -31,6 +30,7 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final EmailConfirmationService emailConfirmationService;
+    private final PasswordResetService passwordResetService;
 
     @Operation(summary = "User registration", description = "Sends a link to confirm your email.")
     @ApiResponses(value = {
@@ -77,7 +77,7 @@ public class AuthController {
         } catch (ResponseStatusException ex) {
             return ResponseEntity
                     .status(ex.getStatusCode())
-                    .body(ex.getMessage());
+                    .body(ex.getReason());
         }
     }
 
@@ -229,5 +229,68 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         authenticationService.logout();
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Change password in account", description = "Change of account's password")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Changed success"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Passwords do not match"
+            )
+    })
+    @PutMapping("/change_password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto request) {
+        try {
+            authenticationService.changePassword(request);
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).body(ex.getMessage());
+        } catch (UsernameNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Change password in account", description = "Receiving mail for an account for which you need to change the password")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "A message to change your password has been sent to your email address."
+            )
+    })
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody EmailRequestDto email, HttpServletRequest request) {
+        String baseUrl = ServletUriComponentsBuilder
+                .fromRequestUri(request)
+                .replacePath(null)
+                .build()
+                .toUriString();
+        passwordResetService.sendResetLink(email.getEmail(), baseUrl);
+        return ResponseEntity.ok("A reset link has been sent to your email address, if one exists.");
+    }
+
+    @Operation(summary = "Change password in account", description = "Obtaining a password change token, new password, and confirmation of the new password")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "A message to change your password has been sent to your email address."
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Passwords do not match"
+            )
+    })
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String token,
+                                                @Valid @RequestBody ChangePasswordDto request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
+        }
+        passwordResetService.resetPassword(token, request.getPassword());
+        return ResponseEntity.ok("Your password has been reset.");
     }
 }

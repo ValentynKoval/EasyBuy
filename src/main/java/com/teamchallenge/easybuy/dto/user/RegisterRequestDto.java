@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.dto;
+package com.teamchallenge.easybuy.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -9,6 +9,9 @@ import lombok.Data;
 
 @Data
 public class RegisterRequestDto {
+    @Schema(description = "Store name", example = "MyStore")
+    private String storeName;
+
     @NotBlank(message = "Email cannot be empty")
     @Email(message = "Incorrect email format")
     @Schema(description = "User email", example = "user@example.com", required = true)
