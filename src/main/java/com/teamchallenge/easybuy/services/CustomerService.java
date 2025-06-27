@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.services;
 
 import com.teamchallenge.easybuy.dto.AddressDto;
 import com.teamchallenge.easybuy.dto.CustomerProfileDto;
+import com.teamchallenge.easybuy.dto.CustomerProfileResponseDto;
 import com.teamchallenge.easybuy.mapper.AddressMapper;
 import com.teamchallenge.easybuy.mapper.CustomerMapper;
 import com.teamchallenge.easybuy.models.Address;
@@ -16,9 +17,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -28,12 +26,11 @@ public class CustomerService {
     private final EmailConfirmationService emailConfirmationService;
     private final TokenService tokenService;
 
-    public Map<String, Object> getCustomerProfile() {
+    public CustomerProfileResponseDto getCustomerProfile() {
         Customer customer = getCustomer();
-        Map<String, Object> result = new HashMap<>();
-        result.put("profile", customerMapper.toDto(customer));
-        result.put("address", addressMapper.toDto(customer.getAddress()));
-        return result;
+        return new CustomerProfileResponseDto(
+                customerMapper.toDto(customer),
+                addressMapper.toDto(customer.getAddress()));
     }
 
     public CustomerProfileDto updateCustomerProfile(CustomerProfileDto customerProfile, HttpServletRequest request) {
