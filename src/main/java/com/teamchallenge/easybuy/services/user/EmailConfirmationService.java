@@ -42,6 +42,9 @@ public class EmailConfirmationService {
     public void sendConfirmationEmail(User user, String url) {
         String token = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
+
+        emailConfirmationTokenRepository.deleteAllByExpiresAtBefore(now);
+
         EmailConfirmationToken emailConfirmationToken = new EmailConfirmationToken();
         emailConfirmationToken.setToken(token);
         emailConfirmationToken.setUser(user);
