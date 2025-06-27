@@ -1,6 +1,5 @@
-package com.teamchallenge.easybuy.models;
+package com.teamchallenge.easybuy.models.user;
 
-import com.teamchallenge.easybuy.models.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;

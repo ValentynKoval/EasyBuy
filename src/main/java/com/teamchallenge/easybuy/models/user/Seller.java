@@ -1,7 +1,7 @@
-package com.teamchallenge.easybuy.models;
+package com.teamchallenge.easybuy.models.user;
 
+import com.teamchallenge.easybuy.models.Address;
 import com.teamchallenge.easybuy.models.goods.Shop;
-import com.teamchallenge.easybuy.models.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;

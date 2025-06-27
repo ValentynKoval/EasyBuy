@@ -1,9 +1,9 @@
-package com.teamchallenge.easybuy.controllers;
+package com.teamchallenge.easybuy.controllers.user;
 
 import com.teamchallenge.easybuy.dto.AddressDto;
-import com.teamchallenge.easybuy.dto.CustomerProfileDto;
-import com.teamchallenge.easybuy.dto.CustomerProfileResponseDto;
-import com.teamchallenge.easybuy.services.CustomerService;
+import com.teamchallenge.easybuy.dto.user.CustomerProfileDto;
+import com.teamchallenge.easybuy.dto.user.CustomerProfileResponseDto;
+import com.teamchallenge.easybuy.services.user.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

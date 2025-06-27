@@ -1,15 +1,13 @@
-package com.teamchallenge.easybuy.services;
+package com.teamchallenge.easybuy.services.user;
 
 import com.teamchallenge.easybuy.dto.AddressDto;
-import com.teamchallenge.easybuy.dto.CustomerProfileDto;
-import com.teamchallenge.easybuy.dto.CustomerProfileResponseDto;
+import com.teamchallenge.easybuy.dto.user.CustomerProfileDto;
+import com.teamchallenge.easybuy.dto.user.CustomerProfileResponseDto;
 import com.teamchallenge.easybuy.mapper.AddressMapper;
 import com.teamchallenge.easybuy.mapper.CustomerMapper;
 import com.teamchallenge.easybuy.models.Address;
-import com.teamchallenge.easybuy.models.Customer;
-import com.teamchallenge.easybuy.repo.CustomerRepository;
-import com.teamchallenge.easybuy.services.user.EmailConfirmationService;
-import com.teamchallenge.easybuy.services.user.TokenService;
+import com.teamchallenge.easybuy.models.user.Customer;
+import com.teamchallenge.easybuy.repo.user.CustomerRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;

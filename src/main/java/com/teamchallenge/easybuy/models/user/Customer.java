@@ -1,6 +1,6 @@
-package com.teamchallenge.easybuy.models;
+package com.teamchallenge.easybuy.models.user;
 
-import com.teamchallenge.easybuy.models.user.User;
+import com.teamchallenge.easybuy.models.Address;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
