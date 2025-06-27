@@ -242,7 +242,6 @@ public class AuthController {
                     description = "Passwords do not match"
             )
     })
-
     @PutMapping("/change_password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto request) {
         try {
@@ -256,6 +255,13 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Change password in account", description = "Receiving mail for an account for which you need to change the password")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "A message to change your password has been sent to your email address."
+            )
+    })
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@Valid @RequestBody EmailRequestDto email, HttpServletRequest request) {
         String baseUrl = ServletUriComponentsBuilder
@@ -267,6 +273,17 @@ public class AuthController {
         return ResponseEntity.ok("A reset link has been sent to your email address, if one exists.");
     }
 
+    @Operation(summary = "Change password in account", description = "Obtaining a password change token, new password, and confirmation of the new password")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "A message to change your password has been sent to your email address."
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Passwords do not match"
+            )
+    })
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestParam String token,
                                                 @Valid @RequestBody ChangePasswordDto request) {
