@@ -1,5 +1,6 @@
 package com.teamchallenge.easybuy.models;
 
+import com.teamchallenge.easybuy.models.goods.Shop;
 import com.teamchallenge.easybuy.models.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,9 +13,8 @@ import lombok.experimental.SuperBuilder;
 @Entity
 public class Seller extends User{
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "address_id")
     private Address address;
 
-    @Column(name = "store_name")
-    private String storeName;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private Shop shop;
 }
