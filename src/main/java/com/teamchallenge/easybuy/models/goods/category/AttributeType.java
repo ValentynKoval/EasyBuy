@@ -13,5 +13,5 @@
         @Schema(description = "Boolean type attribute", example = "BOOLEAN")
         BOOLEAN,
         @Schema(description = "Enumerated type attribute", example = "ENUM")
-        ENUM
-    }
+        ENUM;
+        }

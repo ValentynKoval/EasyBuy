@@ -26,6 +26,7 @@ import java.util.UUID;
 public class Category {
 
     @Id
+    @NotNull
     @GeneratedValue
     @Column(nullable = false, updatable = false)
     @Schema(description = "Unique ID of the category", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
@@ -38,7 +39,6 @@ public class Category {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    @NotNull
     @Schema(description = "Parent category if this is a subcategory", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
     private Category parentCategory;
 
