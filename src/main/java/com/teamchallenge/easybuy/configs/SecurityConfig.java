@@ -33,6 +33,8 @@ public class SecurityConfig {
             "/api/auth/refresh",
             "/api/auth/confirm",
             "/api/auth/resend-confirmation",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password",
             "/api/goods/**",
             "/api/categories/**",
             "/api/goods-images/**",
