@@ -48,6 +48,9 @@ public abstract class User {
     @Column(name = "role")
     private Role role;
 
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
     @PrePersist
     @Schema(hidden = true)
     protected void onCreate() {
