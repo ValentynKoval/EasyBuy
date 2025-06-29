@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.controllers.user;
 
 import com.teamchallenge.easybuy.dto.user.*;
 import com.teamchallenge.easybuy.models.user.User;
+import com.teamchallenge.easybuy.services.goods.image.CloudinaryImageService;
 import com.teamchallenge.easybuy.services.user.AuthenticationService;
 import com.teamchallenge.easybuy.services.user.EmailConfirmationService;
 import com.teamchallenge.easybuy.services.user.PasswordResetService;
@@ -18,9 +19,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -31,6 +34,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final EmailConfirmationService emailConfirmationService;
     private final PasswordResetService passwordResetService;
+    private final CloudinaryImageService  cloudinaryImageService;
 
     @Operation(summary = "User registration", description = "Sends a link to confirm your email.")
     @ApiResponses(value = {
@@ -263,13 +267,13 @@ public class AuthController {
             )
     })
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@Valid @RequestBody EmailRequestDto email, HttpServletRequest request) {
+    public ResponseEntity<String> forgotPassword(@Valid @RequestParam("email") String email, HttpServletRequest request) {
         String baseUrl = ServletUriComponentsBuilder
                 .fromRequestUri(request)
                 .replacePath(null)
                 .build()
                 .toUriString();
-        passwordResetService.sendResetLink(email.getEmail(), baseUrl);
+        passwordResetService.sendResetLink(email, baseUrl);
         return ResponseEntity.ok("A reset link has been sent to your email address, if one exists.");
     }
 
@@ -292,5 +296,26 @@ public class AuthController {
         }
         passwordResetService.resetPassword(token, request.getPassword());
         return ResponseEntity.ok("Your password has been reset.");
+    }
+
+    @PutMapping("/avatar")
+    public ResponseEntity<?> updateAvatar(@RequestParam("file") MultipartFile file) {
+        try {
+            String avatarUrl = cloudinaryImageService.uploadImage(file, "easybuy/users");
+            authenticationService.updateAvatarUrl(avatarUrl);
+            return ResponseEntity.ok(avatarUrl);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/avatar")
+    public ResponseEntity<?> deleteAvatar() {
+        try {
+            authenticationService.deleteAvatarUrl();
+            return ResponseEntity.ok("Avatar has been deleted.");
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Delete failed: " + e.getMessage());
+        }
     }
 }
