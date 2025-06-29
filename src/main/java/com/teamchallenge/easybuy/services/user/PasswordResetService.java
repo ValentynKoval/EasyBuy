@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -54,5 +55,10 @@ public class PasswordResetService {
 
         passwordResetToken.setConfirmed(true);
         passwordResetTokenRepository.save(passwordResetToken);
+    }
+
+    @Transactional
+    void deleteAllByUser(User user) {
+        passwordResetTokenRepository.deleteAllByUser(user);
     }
 }
