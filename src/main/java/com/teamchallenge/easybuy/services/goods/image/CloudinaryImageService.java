@@ -30,18 +30,18 @@ public class CloudinaryImageService {
      * The folder path will be: "easybuy/shops/{shopId}/goods/{goodsArt}"
      *
      * @param file    Multipart file to be uploaded.
-     * @param shopId  The UUID of the shop, used for folder creation.
-     * @param goodsArt The article number of the goods, used for folder creation.
+//     * @param shopId  The UUID of the shop, used for folder creation.
+//     * @param goodsArt The article number of the goods, used for folder creation.
      * @return Public URL of the uploaded image.
      * @throws IOException if upload fails.
      */
 
-    public String uploadImage(MultipartFile file, UUID shopId, String goodsArt) throws IOException {
+    public String uploadImage(MultipartFile file, String folderPath) throws IOException {
         if (file.isEmpty()) {
             throw new IOException("File is empty, cannot upload.");
         }
         try {
-            String folderPath = String.format("easybuy/shops/%s/goods/%s", shopId.toString(), goodsArt);
+//            String folderPath = String.format("easybuy/shops/%s/goods/%s", shopId.toString(), goodsArt);
 
             logger.info("Uploading image to Cloudinary: original filename = {}, folder = {}", file.getOriginalFilename(), folderPath);
 
