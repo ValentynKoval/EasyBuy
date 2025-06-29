@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Random;
 
 /**
  * Service for handling Cloudinary image operations.
@@ -41,8 +41,6 @@ public class CloudinaryImageService {
             throw new IOException("File is empty, cannot upload.");
         }
         try {
-//            String folderPath = String.format("easybuy/shops/%s/goods/%s", shopId.toString(), goodsArt);
-
             logger.info("Uploading image to Cloudinary: original filename = {}, folder = {}", file.getOriginalFilename(), folderPath);
 
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
@@ -118,5 +116,43 @@ public class CloudinaryImageService {
             logger.error("Error extracting public ID from URL: {}", imageUrl, e);
             return null;
         }
+    }
+
+    private String getInitials(String name) {
+        String[] words = name.trim().split("\\s+");
+        if (words.length == 1) {
+            return words[0].substring(0, Math.min(2, words[0].length())).toUpperCase();
+        } else {
+            return (words[0].substring(0,1) + words[1].substring(0,1)).toUpperCase();
+        }
+    }
+
+    private String randomColorHex() {
+        Random random = new Random();
+        int r = random.nextInt(256);
+        int g = random.nextInt(256);
+        int b = random.nextInt(256);
+        return String.format("%02X%02X%02X", r, g, b);
+    }
+
+    private String pickTextColor(String bgHex) {
+        int r = Integer.parseInt(bgHex.substring(0,2), 16);
+        int g = Integer.parseInt(bgHex.substring(2,4), 16);
+        int b = Integer.parseInt(bgHex.substring(4,6), 16);
+        double luminance = (0.299*r + 0.587*g + 0.114*b) / 255;
+        return (luminance > 0.5) ? "000000" : "FFFFFF";
+    }
+
+    public String generateAvatarUrl(String name) {
+        String initials = getInitials(name);
+        String bgColor = randomColorHex();
+        String textColor = pickTextColor(bgColor);
+
+        String cloudName = cloudinary.config.cloudName;
+
+        return String.format("https://res.cloudinary.com/%s/image/upload/"+
+                        "w_400,h_400,c_fill,b_rgb:%s,co_rgb:%s," +
+                        "l_text:Roboto_400_bold:%s/empty",
+                cloudName, bgColor, textColor, initials);
     }
 }
