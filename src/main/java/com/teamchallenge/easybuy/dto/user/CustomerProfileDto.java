@@ -8,6 +8,9 @@ import java.time.LocalDate;
 
 @Data
 public class CustomerProfileDto {
+    @Schema(description = "User avatar url", example = "https://example.com/images/product123_2.jpg")
+    private String avatarUrl;
+
     @Schema(description = "Customer name", example = "Ivanov Ivan")
     private String name;
 
