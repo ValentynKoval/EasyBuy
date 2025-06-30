@@ -14,7 +14,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -89,7 +88,7 @@ public class AuthenticationService {
                     )
             );
             User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found with email : " + request.getEmail()));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email : " + request.getEmail()));
             if (!user.isEmailVerified()) {
                 throw new IllegalStateException("Email not confirmed");
             }
@@ -134,7 +133,7 @@ public class AuthenticationService {
 
         return userRepository.findByEmail(username)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found: " + username));
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
     }
 
     public void changePassword(ChangePasswordDto request) {
