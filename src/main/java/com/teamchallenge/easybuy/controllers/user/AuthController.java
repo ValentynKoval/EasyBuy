@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -70,19 +69,9 @@ public class AuthController {
                 .replacePath(null)
                 .build()
                 .toUriString();
-        try {
-            User user = authenticationService.register(registerRequestDto);
-            emailConfirmationService.sendConfirmationEmail(user, baseUrl);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (IllegalStateException ex) {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(ex.getMessage());
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity
-                    .status(ex.getStatusCode())
-                    .body(ex.getReason());
-        }
+        User user = authenticationService.register(registerRequestDto);
+        emailConfirmationService.sendConfirmationEmail(user, baseUrl);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "Email confirmation", description = "Confirms email using token from email")
@@ -106,11 +95,7 @@ public class AuthController {
     })
     @GetMapping("/confirm")
     public ResponseEntity<?> confirm(@RequestParam("token") String token) {
-        try {
-            return ResponseEntity.ok(emailConfirmationService.confirmEmail(token));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.GONE).body(e.getMessage());
-        }
+        return ResponseEntity.ok(emailConfirmationService.confirmEmail(token));
     }
 
     @Operation(summary = "Resend link to email", description = "Resends the email link to the user")
@@ -212,14 +197,8 @@ public class AuthController {
     })
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequestDto request) {
-        try {
-            AuthResponseDto authResponseDto = authenticationService.refresh(request.getRefreshToken());
-            return ResponseEntity.ok(authResponseDto);
-        } catch (IllegalStateException ex) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(ex.getMessage());
-        }
+        AuthResponseDto authResponseDto = authenticationService.refresh(request.getRefreshToken());
+        return ResponseEntity.ok(authResponseDto);
     }
 
     @Operation(summary = "Log out of account", description = "Logs out of user account")
@@ -248,14 +227,7 @@ public class AuthController {
     })
     @PutMapping("/change_password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto request) {
-        try {
-            authenticationService.changePassword(request);
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(ex.getMessage());
-        } catch (UsernameNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
-        }
-
+        authenticationService.changePassword(request);
         return ResponseEntity.ok().build();
     }
 
