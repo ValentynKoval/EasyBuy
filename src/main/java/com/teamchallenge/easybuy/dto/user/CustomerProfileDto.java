@@ -1,5 +1,6 @@
 package com.teamchallenge.easybuy.dto.user;
 
+import com.teamchallenge.easybuy.validation.ValidPhone;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class CustomerProfileDto {
     private LocalDate birthday;
 
     @NotBlank(message = "Phone number cannot be empty")
-    @Pattern(regexp = "^\\+?\\d{10,15}$", message = "Incorrect phone number format")
+    @ValidPhone
     @Schema(description = "User's phone number in the format +380...", example = "+380931234567", required = true)
     private String phoneNumber;
 
