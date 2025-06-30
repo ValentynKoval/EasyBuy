@@ -29,6 +29,7 @@ public class CustomerService {
     private final TokenService tokenService;
     private final PasswordResetService passwordResetService;
     private final CloudinaryImageService cloudinaryImageService;
+    private final PhoneValidationService phoneValidationService;
 
     public CustomerProfileResponseDto getCustomerProfile() {
         Customer customer = getCustomer();
@@ -41,7 +42,7 @@ public class CustomerService {
         Customer customer = getCustomer();
         customer.setName(customerProfile.getName());
         customer.setBirthday(customerProfile.getBirthday());
-        customer.setPhoneNumber(customerProfile.getPhoneNumber());
+        customer.setPhoneNumber(phoneValidationService.formatToE164(customerProfile.getPhoneNumber()));
         if (!customer.getEmail().equals(customerProfile.getEmail())) {
             customer.setEmail(customerProfile.getEmail());
             customer.setEmailVerified(false);

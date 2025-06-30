@@ -35,6 +35,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
     private final CloudinaryImageService cloudinaryImageService;
+    private final PhoneValidationService phoneValidationService;
 
     public User register(RegisterRequestDto registerRequestDto) {
         if (userRepository.existsByEmailAndPhoneNumber(registerRequestDto.getEmail(), registerRequestDto.getPhoneNumber()))
@@ -50,7 +51,7 @@ public class AuthenticationService {
                 user = Customer.builder()
                         .email(registerRequestDto.getEmail())
                         .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                        .phoneNumber(registerRequestDto.getPhoneNumber())
+                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
                         .role(Role.CUSTOMER)
                         .avatarUrl(cloudinaryImageService.generateAvatarUrl(registerRequestDto.getEmail()))
                         .build();
@@ -60,7 +61,7 @@ public class AuthenticationService {
                 user = Seller.builder()
                         .email(registerRequestDto.getEmail())
                         .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                        .phoneNumber(registerRequestDto.getPhoneNumber())
+                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
                         .role(Role.SELLER)
                         .avatarUrl(cloudinaryImageService.generateAvatarUrl(registerRequestDto.getStoreName()))
                         .build();
@@ -70,7 +71,7 @@ public class AuthenticationService {
                 user = Manager.builder()
                         .email(registerRequestDto.getEmail())
                         .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                        .phoneNumber(registerRequestDto.getPhoneNumber())
+                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
                         .role(Role.MANAGER)
                         .build();
                 break;
