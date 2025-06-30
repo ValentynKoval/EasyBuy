@@ -11,10 +11,11 @@ import com.teamchallenge.easybuy.repo.user.CustomerRepository;
 import com.teamchallenge.easybuy.services.goods.image.CloudinaryImageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
@@ -93,7 +94,7 @@ public class CustomerService {
 
         return customerRepository.findByEmail(username)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("Customer not found: " + username));
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found: " + username));
     }
 
 }

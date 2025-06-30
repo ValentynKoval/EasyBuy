@@ -5,10 +5,11 @@ import com.teamchallenge.easybuy.models.user.User;
 import com.teamchallenge.easybuy.repo.user.PasswordResetTokenRepository;
 import com.teamchallenge.easybuy.repo.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -22,7 +23,7 @@ public class PasswordResetService {
     private final PasswordEncoder passwordEncoder;
 
     public void sendResetLink(String email, String url) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         LocalDateTime now = LocalDateTime.now();
         passwordResetTokenRepository.deleteAllByExpiresAtBefore(now);
