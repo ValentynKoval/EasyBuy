@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/customer")
@@ -84,7 +86,11 @@ public class CustomerController {
     })
     @DeleteMapping()
     public ResponseEntity<?> deleteCustomerProfile() {
-        customerService.deleteCustomer();
-        return ResponseEntity.noContent().build();
+        try {
+            customerService.deleteCustomer();
+            return ResponseEntity.noContent().build();
+        } catch (IOException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 }

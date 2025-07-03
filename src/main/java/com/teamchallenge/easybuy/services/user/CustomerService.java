@@ -8,12 +8,17 @@ import com.teamchallenge.easybuy.mapper.CustomerMapper;
 import com.teamchallenge.easybuy.models.Address;
 import com.teamchallenge.easybuy.models.user.Customer;
 import com.teamchallenge.easybuy.repo.user.CustomerRepository;
+import com.teamchallenge.easybuy.services.goods.image.CloudinaryImageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +28,9 @@ public class CustomerService {
     private final AddressMapper addressMapper;
     private final EmailConfirmationService emailConfirmationService;
     private final TokenService tokenService;
+    private final PasswordResetService passwordResetService;
+    private final CloudinaryImageService cloudinaryImageService;
+    private final PhoneValidationService phoneValidationService;
 
     public CustomerProfileResponseDto getCustomerProfile() {
         Customer customer = getCustomer();
@@ -35,7 +43,7 @@ public class CustomerService {
         Customer customer = getCustomer();
         customer.setName(customerProfile.getName());
         customer.setBirthday(customerProfile.getBirthday());
-        customer.setPhoneNumber(customerProfile.getPhoneNumber());
+        customer.setPhoneNumber(phoneValidationService.formatToE164(customerProfile.getPhoneNumber()));
         if (!customer.getEmail().equals(customerProfile.getEmail())) {
             customer.setEmail(customerProfile.getEmail());
             customer.setEmailVerified(false);
@@ -64,10 +72,17 @@ public class CustomerService {
         return addressMapper.toDto(newCustomer.getAddress());
     }
 
-    public void deleteCustomer() {
+    @Transactional
+    public void deleteCustomer() throws IOException {
         Customer customer = getCustomer();
+        String avatarUrl = customer.getAvatarUrl();
+        String publicId = cloudinaryImageService.extractPublicIdFromUrl(avatarUrl);
+        if (publicId != null) {
+            cloudinaryImageService.deleteImage(publicId);
+        }
         tokenService.deleteAllTokensForUser(customer);
         emailConfirmationService.deleteAllByUser(customer);
+        passwordResetService.deleteAllByUser(customer);
         customerRepository.delete(customer);
     }
 
@@ -79,7 +94,7 @@ public class CustomerService {
 
         return customerRepository.findByEmail(username)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("Customer not found: " + username));
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found: " + username));
     }
 
 }

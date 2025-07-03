@@ -26,7 +26,7 @@ public abstract class User {
     @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "phone_number", length = 11, unique = true)
+    @Column(name = "phone_number", length = 20, unique = true)
     private String phoneNumber;
 
     @Column(name = "password")
@@ -47,6 +47,9 @@ public abstract class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
 
     @PrePersist
     @Schema(hidden = true)

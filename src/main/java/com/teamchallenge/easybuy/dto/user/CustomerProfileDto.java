@@ -1,5 +1,6 @@
 package com.teamchallenge.easybuy.dto.user;
 
+import com.teamchallenge.easybuy.validation.ValidPhone;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -8,6 +9,9 @@ import java.time.LocalDate;
 
 @Data
 public class CustomerProfileDto {
+    @Schema(description = "User avatar url", example = "https://example.com/images/product123_2.jpg")
+    private String avatarUrl;
+
     @Schema(description = "Customer name", example = "Ivanov Ivan")
     private String name;
 
@@ -17,7 +21,7 @@ public class CustomerProfileDto {
     private LocalDate birthday;
 
     @NotBlank(message = "Phone number cannot be empty")
-    @Pattern(regexp = "^\\+?\\d{10,15}$", message = "Incorrect phone number format")
+    @ValidPhone
     @Schema(description = "User's phone number in the format +380...", example = "+380931234567", required = true)
     private String phoneNumber;
 

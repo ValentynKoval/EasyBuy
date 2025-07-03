@@ -6,6 +6,7 @@ import com.teamchallenge.easybuy.dto.user.LoginRequestDto;
 import com.teamchallenge.easybuy.dto.user.RegisterRequestDto;
 import com.teamchallenge.easybuy.models.user.*;
 import com.teamchallenge.easybuy.repo.user.UserRepository;
+import com.teamchallenge.easybuy.services.goods.image.CloudinaryImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +14,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
 
 /**
  * Service for handling user registration and authentication.
@@ -31,6 +33,8 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final CloudinaryImageService cloudinaryImageService;
+    private final PhoneValidationService phoneValidationService;
 
     public User register(RegisterRequestDto registerRequestDto) {
         if (userRepository.existsByEmailAndPhoneNumber(registerRequestDto.getEmail(), registerRequestDto.getPhoneNumber()))
@@ -44,29 +48,31 @@ public class AuthenticationService {
         switch (Role.valueOf(registerRequestDto.getRole())) {
             case CUSTOMER:
                 user = Customer.builder()
-                    .email(registerRequestDto.getEmail())
-                    .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                    .phoneNumber(registerRequestDto.getPhoneNumber())
-                    .role(Role.CUSTOMER)
-                    .build();
+                        .email(registerRequestDto.getEmail())
+                        .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
+                        .role(Role.CUSTOMER)
+                        .avatarUrl(cloudinaryImageService.generateAvatarUrl(registerRequestDto.getEmail()))
+                        .build();
                 break;
             case SELLER:
                 // todo add the creation of a store and assign a name to it
                 user = Seller.builder()
                         .email(registerRequestDto.getEmail())
                         .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                        .phoneNumber(registerRequestDto.getPhoneNumber())
+                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
                         .role(Role.SELLER)
+                        .avatarUrl(cloudinaryImageService.generateAvatarUrl(registerRequestDto.getStoreName()))
                         .build();
                 break;
             case MANAGER:
                 // todo add a search by store name and link the manager to the store
                 user = Manager.builder()
-                    .email(registerRequestDto.getEmail())
-                    .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                    .phoneNumber(registerRequestDto.getPhoneNumber())
-                    .role(Role.MANAGER)
-                    .build();
+                        .email(registerRequestDto.getEmail())
+                        .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
+                        .role(Role.MANAGER)
+                        .build();
                 break;
             default:
                 throw new IllegalArgumentException("Invalid role");
@@ -82,7 +88,7 @@ public class AuthenticationService {
                     )
             );
             User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found with email : " + request.getEmail()));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email : " + request.getEmail()));
             if (!user.isEmailVerified()) {
                 throw new IllegalStateException("Email not confirmed");
             }
@@ -127,7 +133,7 @@ public class AuthenticationService {
 
         return userRepository.findByEmail(username)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found: " + username));
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
     }
 
     public void changePassword(ChangePasswordDto request) {
@@ -136,6 +142,28 @@ public class AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
         }
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+    }
+
+    public void updateAvatarUrl(String avatarUrl) {
+        User user = getUser();
+        user.setAvatarUrl(avatarUrl);
+        userRepository.save(user);
+    }
+
+    public void deleteAvatarUrl() throws IOException {
+        User user = getUser();
+        String avatarUrl = user.getAvatarUrl();
+        String publicId = cloudinaryImageService.extractPublicIdFromUrl(avatarUrl);
+        if (publicId != null) {
+            cloudinaryImageService.deleteImage(publicId);
+        }
+        // todo make it so that depending on how the role is, the avatar is generated from the corresponding name
+        if (user.getRole().equals(Role.CUSTOMER)) {
+            user.setAvatarUrl(cloudinaryImageService.generateAvatarUrl(user.getEmail()));
+        } else {
+            user.setAvatarUrl(null);
+        }
         userRepository.save(user);
     }
 }

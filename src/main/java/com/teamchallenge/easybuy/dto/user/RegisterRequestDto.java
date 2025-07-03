@@ -1,9 +1,9 @@
 package com.teamchallenge.easybuy.dto.user;
 
+import com.teamchallenge.easybuy.validation.ValidPhone;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -18,7 +18,7 @@ public class RegisterRequestDto {
     private String email;
 
     @NotBlank(message = "Phone number cannot be empty")
-    @Pattern(regexp = "^\\+?\\d{10,15}$", message = "Incorrect phone number format")
+    @ValidPhone
     @Schema(description = "User's phone number in the format +380...", example = "+380931234567", required = true)
     private String phoneNumber;
 
