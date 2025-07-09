@@ -17,11 +17,6 @@ public class RegisterRequestDto {
     @Schema(description = "User email", example = "user@example.com", required = true)
     private String email;
 
-    @NotBlank(message = "Phone number cannot be empty")
-    @ValidPhone
-    @Schema(description = "User's phone number in the format +380...", example = "+380931234567", required = true)
-    private String phoneNumber;
-
     @NotBlank(message = "Password cannot be empty")
     @Size(min = 6, max = 50, message = "Password must contain 6 to 50 characters")
     @Schema(description = "User password", example = "MySecurePassword1", required = true)
@@ -30,6 +25,12 @@ public class RegisterRequestDto {
     @NotBlank(message = "Password confirmation cannot be empty")
     @Schema(description = "Password confirmation", example = "MySecurePassword1", required = true)
     private String confirmPassword;
+
+    @Schema(description = "User agreement", example = "false")
+    private boolean agreement = false;
+
+    @Schema(description = "User Privacy Policy", example = "false")
+    private boolean privacy = false;
 
     @NotBlank(message = "Role cannot be empty.")
     @Schema(description = "User role (e.g. SELLER, CUSTOMER or ADMIN)", example = "CUSTOMER", required = true)
