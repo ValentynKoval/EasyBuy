@@ -37,8 +37,8 @@ public class AuthenticationService {
     private final PhoneValidationService phoneValidationService;
 
     public User register(RegisterRequestDto registerRequestDto) {
-        if (userRepository.existsByEmailAndPhoneNumber(registerRequestDto.getEmail(), registerRequestDto.getPhoneNumber()))
-            throw new IllegalStateException("The user with this email or phone number is already registered");
+        if (userRepository.existsByEmail(registerRequestDto.getEmail()))
+            throw new IllegalStateException("The user with this email is already registered");
 
         if (!registerRequestDto.getPassword().equals(registerRequestDto.getConfirmPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
@@ -50,9 +50,10 @@ public class AuthenticationService {
                 user = Customer.builder()
                         .email(registerRequestDto.getEmail())
                         .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
                         .role(Role.CUSTOMER)
                         .avatarUrl(cloudinaryImageService.generateAvatarUrl(registerRequestDto.getEmail()))
+                        .agreement(registerRequestDto.isAgreement())
+                        .privacy(registerRequestDto.isPrivacy())
                         .build();
                 break;
             case SELLER:
@@ -60,9 +61,10 @@ public class AuthenticationService {
                 user = Seller.builder()
                         .email(registerRequestDto.getEmail())
                         .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
                         .role(Role.SELLER)
                         .avatarUrl(cloudinaryImageService.generateAvatarUrl(registerRequestDto.getStoreName()))
+                        .agreement(registerRequestDto.isAgreement())
+                        .privacy(registerRequestDto.isPrivacy())
                         .build();
                 break;
             case MANAGER:
@@ -70,8 +72,9 @@ public class AuthenticationService {
                 user = Manager.builder()
                         .email(registerRequestDto.getEmail())
                         .password(passwordEncoder.encode(registerRequestDto.getPassword()))
-                        .phoneNumber(phoneValidationService.formatToE164(registerRequestDto.getPhoneNumber()))
                         .role(Role.MANAGER)
+                        .agreement(registerRequestDto.isAgreement())
+                        .privacy(registerRequestDto.isPrivacy())
                         .build();
                 break;
             default:
