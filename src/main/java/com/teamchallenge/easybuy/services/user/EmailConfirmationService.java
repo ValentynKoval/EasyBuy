@@ -26,6 +26,9 @@ public class EmailConfirmationService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
 
+    @Value("${frontend.server.url}")
+    private String frontendUrl;
+
     @Value("${spring.mail.username}")
     private String username;
 
@@ -40,7 +43,7 @@ public class EmailConfirmationService {
         javaMailSender.send(simpleMailMessage);
     }
 
-    public void sendConfirmationEmail(User user, String url) {
+    public void sendConfirmationEmail(User user) {
         String token = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
 
@@ -53,17 +56,17 @@ public class EmailConfirmationService {
         emailConfirmationToken.setExpiresAt(now.plusHours(24));
         emailConfirmationTokenRepository.save(emailConfirmationToken);
 
-        String link = url + "/api/auth/confirm?token=" + token;
+        String link = frontendUrl + "/confirm?token=" + token;
         send(user.getEmail(), "Confirm your e-mail address",
                 "Please click the link below to confirm your e-mail address: " + link);
     }
 
     @Transactional
-    public void resendConfirmationEmail(String email, String url) {
+    public void resendConfirmationEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         deleteAllByUser(user);
-        sendConfirmationEmail(user, url);
+        sendConfirmationEmail(user);
     }
 
     public AuthResponseDto confirmEmail(String token) {
