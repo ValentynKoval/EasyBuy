@@ -1,6 +1,7 @@
 package com.teamchallenge.easybuy.exceptions;
 
 import com.teamchallenge.easybuy.exceptions.goods.*;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -100,6 +101,14 @@ public class GlobalExceptionHandler {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         return buildErrorResponse(ex.getReason(), status, request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolationException(
+            DataIntegrityViolationException ex, WebRequest request) {
+
+        String message = "Database constraint violated: " + ex.getMostSpecificCause().getMessage();
+        return buildErrorResponse(message, HttpStatus.CONFLICT, request);
     }
 
     /**
