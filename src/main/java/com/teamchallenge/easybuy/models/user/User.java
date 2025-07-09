@@ -33,7 +33,7 @@ public abstract class User {
     private String password;
 
     @Column(name = "is_email_verified")
-    private boolean isEmailVerified;
+    private boolean isEmailVerified = false;
 
     @Column(name = "name")
     private String name;
@@ -51,12 +51,17 @@ public abstract class User {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    @Column(name = "agreement")
+    private boolean agreement = false;
+
+    @Column(name = "privacy")
+    private boolean privacy = false;
+
     @PrePersist
     @Schema(hidden = true)
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.modifiedAt = LocalDateTime.now();
-        this.isEmailVerified = false;
     }
 
     @PreUpdate
