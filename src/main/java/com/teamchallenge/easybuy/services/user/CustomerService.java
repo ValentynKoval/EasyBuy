@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 
@@ -47,12 +46,7 @@ public class CustomerService {
         if (!customer.getEmail().equals(customerProfile.getEmail())) {
             customer.setEmail(customerProfile.getEmail());
             customer.setEmailVerified(false);
-            String baseUrl = ServletUriComponentsBuilder
-                    .fromRequestUri(request)
-                    .replacePath(null)
-                    .build()
-                    .toUriString();
-            emailConfirmationService.sendConfirmationEmail(customer, baseUrl);
+            emailConfirmationService.sendConfirmationEmail(customer);
         }
 
         return customerMapper.toDto(customerRepository.save(customer));
