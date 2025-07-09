@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Map;
@@ -35,7 +34,7 @@ public class AuthController {
     private final PasswordResetService passwordResetService;
     private final CloudinaryImageService  cloudinaryImageService;
 
-    @Operation(summary = "User registration", description = "Sends a link to confirm your email.")
+    @Operation(summary = "User registration", description = "Receives registration data and sends a link to the email address to confirm it. The link looks like this: \".../confirm?token=...\"")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
@@ -63,14 +62,9 @@ public class AuthController {
             )
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDto registerRequestDto, HttpServletRequest request) {
-        String baseUrl = ServletUriComponentsBuilder
-                .fromRequestUri(request)
-                .replacePath(null)
-                .build()
-                .toUriString();
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDto registerRequestDto) {
         User user = authenticationService.register(registerRequestDto);
-        emailConfirmationService.sendConfirmationEmail(user, baseUrl);
+        emailConfirmationService.sendConfirmationEmail(user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -110,13 +104,8 @@ public class AuthController {
             )
     })
     @PostMapping("/resend-confirmation")
-    public ResponseEntity<?> resendConfirmation(@RequestParam String email, HttpServletRequest request) {
-        String baseUrl = ServletUriComponentsBuilder
-                .fromRequestUri(request)
-                .replacePath(null)
-                .build()
-                .toUriString();
-        emailConfirmationService.resendConfirmationEmail(email, baseUrl);
+    public ResponseEntity<?> resendConfirmation(@RequestParam String email) {
+        emailConfirmationService.resendConfirmationEmail(email);
         return ResponseEntity.ok("The new token has been sent to the email");
     }
 
@@ -231,7 +220,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Change password in account", description = "Receiving mail for an account for which you need to change the password")
+    @Operation(summary = "Change password in account", description = "Receiving mail for the account for which the password needs to be changed and sending an email with a password reset link to that email address. The link looks like this: \".../reset-password?token=...\"")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -240,12 +229,7 @@ public class AuthController {
     })
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@Valid @RequestParam("email") String email, HttpServletRequest request) {
-        String baseUrl = ServletUriComponentsBuilder
-                .fromRequestUri(request)
-                .replacePath(null)
-                .build()
-                .toUriString();
-        passwordResetService.sendResetLink(email, baseUrl);
+        passwordResetService.sendResetLink(email);
         return ResponseEntity.ok("A reset link has been sent to your email address, if one exists.");
     }
 

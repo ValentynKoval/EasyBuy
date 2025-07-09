@@ -5,6 +5,7 @@ import com.teamchallenge.easybuy.models.user.User;
 import com.teamchallenge.easybuy.repo.user.PasswordResetTokenRepository;
 import com.teamchallenge.easybuy.repo.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,10 @@ public class PasswordResetService {
     private final EmailConfirmationService emailConfirmationService;
     private final PasswordEncoder passwordEncoder;
 
-    public void sendResetLink(String email, String url) {
+    @Value("${frontend.server.url}")
+    private String frontendUrl;
+
+    public void sendResetLink(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         LocalDateTime now = LocalDateTime.now();
@@ -37,7 +41,7 @@ public class PasswordResetService {
 
         passwordResetTokenRepository.save(passwordResetToken);
 
-        String link = url + "/api/auth/reset-password?token=" + token;
+        String link = frontendUrl + "/reset-password?token=" + token;
         emailConfirmationService.send(user.getEmail(), "Password reset",
                 "Click on the link to set a new password: " + link);
     }
