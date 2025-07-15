@@ -29,7 +29,7 @@ public class Goods {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, updatable = false)
-    @Schema(description = "Unique identifier for the product", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    @Schema(description = "Unique identifier for the product. Just for database. Read only", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479",
             accessMode = Schema.AccessMode.READ_ONLY)
     private UUID id;
 
