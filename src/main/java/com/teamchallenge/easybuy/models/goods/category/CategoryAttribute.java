@@ -41,7 +41,7 @@ public class CategoryAttribute {
     private AttributeType type;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     @Schema(description = "Category this attribute belongs to", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
     private Category category;

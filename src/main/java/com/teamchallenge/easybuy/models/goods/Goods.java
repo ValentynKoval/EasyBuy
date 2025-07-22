@@ -1,6 +1,7 @@
 package com.teamchallenge.easybuy.models.goods;
 
 import com.teamchallenge.easybuy.models.goods.category.Category;
+import com.teamchallenge.easybuy.models.shop.Shop;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "goods", indexes = {
         @Index(name = "idx_goods_art", columnList = "art"),
-        @Index(name = "idx_goods_shopId", columnList = "shopId")
+        @Index(name = "idx_goods_shopId", columnList = "shop_id")
 })
 @Schema(description = "Goods entity used to display goods in the catalog.")
 public class Goods {
@@ -68,11 +69,11 @@ public class Goods {
     @Schema(description = "Number of reviews for the product", example = "45")
     private Integer reviewsCount;
 
-//    todo uncommented wia impl shop
-//    @NotNull , nullable = false
-    @Column(name = "shopId")
-    @Schema(description = "ID of the shop owning the product", example = "a1b2c3d4-5678-90ef-ghij-klmnopqrstuv")
-    private UUID shopId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    @NotNull
+    @Schema(description = "The store that owns this product", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Shop shop;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoryId", nullable = false)
