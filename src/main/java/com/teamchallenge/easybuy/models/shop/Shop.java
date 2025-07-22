@@ -14,13 +14,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.teamchallenge.easybuy.models.shop.ShopContactInfo;
+import com.teamchallenge.easybuy.models.shop.ShopAnalytics;
+import com.teamchallenge.easybuy.models.shop.ShopBillingInfo;
+import com.teamchallenge.easybuy.models.shop.ShopTaxInfo;
+import com.teamchallenge.easybuy.models.shop.ShopManager;
+
+
 @Entity
 @Table(name = "shops", indexes = {
         @Index(name = "idx_shops_slug", columnList = "slug"),
         @Index(name = "idx_shops_status", columnList = "shop_status"),
         @Index(name = "idx_shops_featured", columnList = "is_featured"),
         @Index(name = "idx_shop_userId", columnList = "user_id"),
-
         @Index(name = "idx_shop_managerId", columnList = "manager_id"),
         @Index(name = "idx_shop_shopId", columnList = "shop_id"),
         @Index(name = "idx_shop_name", columnList = "shop_name"),
@@ -54,7 +60,6 @@ public class Shop {
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String shopDescription;
 
-
     @NotNull
     @Column(name = "slug", unique = true)
     @Schema(description = "SEO-friendly identifier", example = "mystore")
@@ -65,6 +70,12 @@ public class Shop {
     @Enumerated(EnumType.STRING)
     @Schema(description = "Status of the shop", example = "ACTIVE")
     private ShopStatus shopStatus;
+
+    @Column(name = "is_featured", nullable = false)
+    @Builder.Default
+    @Schema(description = "Indicates if the shop is featured or recommended on the main page.", example = "false")
+    private boolean isFeatured = false;
+
 
     public enum ShopStatus {
         @Schema(description = "Store is active and available for buyers")
@@ -95,12 +106,6 @@ public class Shop {
     @Schema(description = "Hundreds of commissions, which marketplace takes from sales to its store (for example, 0.05 for 5%)\", example = \"0.05\"")
     private BigDecimal commissionRate;
 
-    @Column(name = "is_featured", nullable = false)
-    @Builder.Default
-    @Schema(description = "The ensign, which indicates that the store is “selected” or “pinned” or “recommended” on the main page of the marketplace",
-            example = "false")
-    private boolean isEnsign = false;
-
     @Column(name = "last_activity_at")
     @Schema(description = "Hour of remaining activity for the store (for example, remaining delivery of goods, processing orders)",
             example = "2025-06-27T10:00:00Z", accessMode = Schema.AccessMode.READ_ONLY)
@@ -127,7 +132,6 @@ public class Shop {
         OTHER
     }
 
-
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     @Schema(description = "Reason for rejection of the store", example = "Store is not suitable for selling goods")
     private String rejectionReasonShop;
@@ -153,8 +157,7 @@ public class Shop {
     @Column(name = "currency", nullable = false, length = 5)
     @Builder.Default
     @Schema(description = "Store currency code ISO 4217", example = "UAH", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String currency;
-
+    private String currency = "UAH";
 
     @NotBlank
     @Column(name = "Language", nullable = false, length = 5)
@@ -168,12 +171,12 @@ public class Shop {
     @Builder.Default
     @Schema(description = "Timezone of the shop (IANA Time Zone Database)", example = "Europe/Kiev",
             requiredMode = Schema.RequiredMode.REQUIRED)
-    private String timezone;
+    private String timezone = "Europe/Kiev";
 
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Schema(description = "Shop contact information")
-    private ShopContactInfo shopContactInfo;
+    private List<ShopContactInfo> shopContactInfo = new ArrayList<>();
 
     @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Schema(description = "Shop Analytics")
@@ -208,8 +211,6 @@ public class Shop {
     @PrePersist
     protected void onCreate() {
         this.createdAt = Instant.now();
-        if (this.isFeatured == null) this.isFeatured = false;
-        if (this.isVerified == null) this.isVerified = false;
         if (this.currency == null) this.currency = "UAH";
         if (this.language == null) this.language = "uk";
         if (this.timezone == null) this.timezone = "Europe/Kiev";
@@ -221,5 +222,4 @@ public class Shop {
         this.updatedAt = Instant.now();
         this.lastActivityAt = Instant.now();
     }
-
 }
