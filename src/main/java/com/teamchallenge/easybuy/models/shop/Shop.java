@@ -1,12 +1,16 @@
 package com.teamchallenge.easybuy.models.shop;
 
-import com.teamchallenge.easybuy.models.User;
 import com.teamchallenge.easybuy.models.goods.Goods;
+import com.teamchallenge.easybuy.models.user.Manager;
+import com.teamchallenge.easybuy.models.user.Seller;
+import com.teamchallenge.easybuy.models.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -14,23 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.teamchallenge.easybuy.models.shop.ShopContactInfo;
-import com.teamchallenge.easybuy.models.shop.ShopAnalytics;
-import com.teamchallenge.easybuy.models.shop.ShopBillingInfo;
-import com.teamchallenge.easybuy.models.shop.ShopTaxInfo;
-import com.teamchallenge.easybuy.models.shop.ShopManager;
-
 
 @Entity
 @Table(name = "shops", indexes = {
+
         @Index(name = "idx_shops_slug", columnList = "slug"),
         @Index(name = "idx_shops_status", columnList = "shop_status"),
         @Index(name = "idx_shops_featured", columnList = "is_featured"),
-        @Index(name = "idx_shop_userId", columnList = "user_id"),
+        @Index(name = "idx_shop_userId", columnList = "seller_id"),
         @Index(name = "idx_shop_managerId", columnList = "manager_id"),
         @Index(name = "idx_shop_shopId", columnList = "shop_id"),
-        @Index(name = "idx_shop_name", columnList = "shop_name"),
-        @Index(name = "idx_shop_isFeatured", columnList = "is_featured")
+        @Index(name = "idx_shop_name", columnList = "shop_name")
 })
 @Getter
 @Setter
@@ -41,11 +39,12 @@ import com.teamchallenge.easybuy.models.shop.ShopManager;
 public class Shop {
 
     @Id
-    @GeneratedValue
-    @Column(nullable = false, updatable = false)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "shop_id", nullable = false, updatable = false)
     @Schema(description = "Unique shop ID. Just for database. Read only", example = "e3b0c442-98fc-4629-8b9c-a5de62ed1df1",
             accessMode = Schema.AccessMode.READ_ONLY)
-    private UUID id;
+    private UUID shopId;
 
     @NotNull
     @Column(name = "shop_name", nullable = false, unique = true, length = 100)
@@ -55,6 +54,7 @@ public class Shop {
 
     @Lob
     @NotNull
+    @Size(max = 1000)
     @Column(name = "shop_description", nullable = false, length = 1000)
     @Schema(description = "Description of the shop. Max Length = 1000.", example = "Leading seller of Shoe and Dress.",
             requiredMode = Schema.RequiredMode.REQUIRED)
@@ -86,16 +86,16 @@ public class Shop {
         PENDING,
         @Schema(description = "Store is blocked due to policy violations")
         BANNED,
-        @Schema(description = "Store is rejected to policy violations")
+        @Schema(description = "Store is rejected due to policy violations")
         REJECTED
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "seller_id", nullable = false)
     @NotNull
-    @Schema(description = "Owner of the shop (creator). Links to User entity.",
+    @Schema(description = "Owner of the shop (creator). Links to Seller entity.",
             example = "123e4567-e89b-12d3-a456-426614174000", requiredMode = Schema.RequiredMode.REQUIRED)
-    private User user;
+    private Seller seller;
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -103,7 +103,7 @@ public class Shop {
     private List<Goods> goods = new ArrayList<>();
 
     @Column(name = "commission_rate", precision = 5, scale = 4)
-    @Schema(description = "Hundreds of commissions, which marketplace takes from sales to its store (for example, 0.05 for 5%)\", example = \"0.05\"")
+    @Schema(description = "Commission rate taken by marketplace (e.g., 0.05 for 5%)\", example = \"0.05\"")
     private BigDecimal commissionRate;
 
     @Column(name = "last_activity_at")
@@ -117,8 +117,8 @@ public class Shop {
     private boolean isVerified = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "Shop_type")
-    @Schema(description = "Type of store, e.g. Sale, Manufacturer, Reseller", example = "Produser")
+    @Column(name = "shop_type")
+    @Schema(description = "Type of store, e.g. Sale, Manufacturer, Reseller", example = "Producer")
     private ShopType shopType;
 
     public enum ShopType {
@@ -134,7 +134,7 @@ public class Shop {
 
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     @Schema(description = "Reason for rejection of the store", example = "Store is not suitable for selling goods")
-    private String rejectionReasonShop;
+    private String rejectionReason;
 
     @Lob
     @Column(name = "moderator_notes")
@@ -147,11 +147,12 @@ public class Shop {
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant lastModeratedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     @Column(name = "moderated_by_user_id")
     @Schema(description = "User ID of the admin who moderated the store. Read only.",
             example = "123e4567-e89b-12d3-a456-426614174000",
             accessMode = Schema.AccessMode.READ_ONLY)
-    private UUID moderatedByUserId;
+    private User moderatedByUser;
 
     @NotBlank
     @Column(name = "currency", nullable = false, length = 5)
@@ -160,7 +161,7 @@ public class Shop {
     private String currency = "UAH";
 
     @NotBlank
-    @Column(name = "Language", nullable = false, length = 5)
+    @Column(name = "language", nullable = false, length = 5)
     @Builder.Default
     @Schema(description = "Primary language of the shop (ISO 639-1)", example = "uk",
             requiredMode = Schema.RequiredMode.REQUIRED)
@@ -178,22 +179,24 @@ public class Shop {
     @Schema(description = "Shop contact information")
     private List<ShopContactInfo> shopContactInfo = new ArrayList<>();
 
-    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Schema(description = "Shop Analytics")
-    private ShopAnalytics analytics;
+    //todo map to db schema`s
+//    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    @Schema(description = "Shop Analytics")
+//    private ShopAnalytics analytics;
+//
+//    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    @Schema(description = "Shop Billing Information")
+//    private ShopBillingInfo billingInfo;
+//
+//    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    @Schema(description = "Shop Tax Information")
+//    private ShopTaxInfo taxInfo;
 
-    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Schema(description = "Shop Billing Information")
-    private ShopBillingInfo billingInfo;
-
-    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Schema(description = "Shop Tax Information")
-    private ShopTaxInfo taxInfo;
-
+    //todo connect to schema shopManagers
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     @Schema(description = "List of manager link records for this shop")
-    private List<ShopManager> shopManagers = new ArrayList<>();
+    private List<Manager> shopManagers = new ArrayList<>();
 
     // --- Fields for autofill and maintenance ---
 
@@ -202,12 +205,16 @@ public class Shop {
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant createdAt;
 
-    @Column(name = "updated_at", updatable = false)
-    @Schema(description = "The time the store was last updated. Set automatically each time the entity is updated..",
+    @Column(name = "updated_at")
+    @Schema(description = "The time the store was last updated. Set automatically each time the entity is updated.",
             example = "2025-05-28T11:21:00Z",
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant updatedAt;
 
+
+    //- is called automatically before the first preservation of the essence
+    //- sets the current time in the createdAt field
+    //- sets the default values if they are not installed
     @PrePersist
     protected void onCreate() {
         this.createdAt = Instant.now();
@@ -216,6 +223,8 @@ public class Shop {
         if (this.timezone == null) this.timezone = "Europe/Kiev";
     }
 
+    //- is called automatically before each renewal of essence
+    //- updatedAt and Lastactivity is updated by the current time
     @PreUpdate
     @Schema(hidden = true)
     protected void onUpdate() {
