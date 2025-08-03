@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.models;
+package com.teamchallenge.easybuy.models.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -16,9 +17,8 @@ import java.time.Instant;
 @Builder
 public class Token {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @Column(name = "token", nullable = false, unique = true)
     private String token;

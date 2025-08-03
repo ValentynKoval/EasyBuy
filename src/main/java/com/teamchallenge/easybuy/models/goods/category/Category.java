@@ -32,6 +32,7 @@ public class Category {
     @Schema(description = "Unique ID of the category", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
     private UUID id;
 
+    //todo maybe create non-unique
     @NotNull
     @Column(nullable = false, unique = true)
     @Schema(description = "Name of the category", example = "Men's Jackets")

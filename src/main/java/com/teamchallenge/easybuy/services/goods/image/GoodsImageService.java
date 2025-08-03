@@ -93,7 +93,7 @@ public class GoodsImageService {
                 .orElseThrow(() -> new GoodsImageException("Goods with ID " + goodsId + " not found for image creation"));
 
         // Step 2: Upload image to Cloudinary from shopId and art
-        String imageUrl = cloudinaryImageService.uploadImage(file, goods.getShopId(), goods.getArt());
+        String imageUrl = cloudinaryImageService.uploadImage(file, String.format("easybuy/shops/%s/goods/%s", goods.getShopId().toString(), goods.getArt()));
 
         // Step 3: Create entity
         GoodsImage newImage = new GoodsImage();
@@ -131,7 +131,7 @@ public class GoodsImageService {
         }
 
         // Step 2: Upload new image з shopId та art
-        String newImageUrl = cloudinaryImageService.uploadImage(file, goods.getShopId(), goods.getArt());
+        String newImageUrl = cloudinaryImageService.uploadImage(file, String.format("easybuy/shops/%s/goods/%s", goods.getShopId().toString(), goods.getArt()));
 
         // Step 3: Update and persist entity
         existingImage.setImageUrl(newImageUrl);

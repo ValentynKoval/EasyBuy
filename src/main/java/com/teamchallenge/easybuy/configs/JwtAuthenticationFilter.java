@@ -1,7 +1,7 @@
 package com.teamchallenge.easybuy.configs;
 
-import com.teamchallenge.easybuy.services.JwtService;
-import com.teamchallenge.easybuy.services.UserDetailsServiceImpl;
+import com.teamchallenge.easybuy.services.user.JwtService;
+import com.teamchallenge.easybuy.services.user.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

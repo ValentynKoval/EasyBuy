@@ -1,17 +1,18 @@
-package com.teamchallenge.easybuy.models;
+package com.teamchallenge.easybuy.models.user;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
 @Table(name = "email_confirmation_token")
 public class EmailConfirmationToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @Column( name = "token", nullable = false, unique = true)
     private String token;
@@ -22,5 +23,7 @@ public class EmailConfirmationToken {
 
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
-    private boolean confirmed;
+
+    @Column(nullable = false)
+    private boolean confirmed = false;
 }
