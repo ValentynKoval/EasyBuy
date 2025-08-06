@@ -3,6 +3,7 @@ package com.teamchallenge.easybuy.models.shop;
 import com.teamchallenge.easybuy.models.goods.Goods;
 import com.teamchallenge.easybuy.models.user.Manager;
 import com.teamchallenge.easybuy.models.user.Seller;
+import com.teamchallenge.easybuy.models.shop.ShopContactInfo;
 import com.teamchallenge.easybuy.models.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -25,8 +26,9 @@ import java.util.UUID;
         @Index(name = "idx_shops_slug", columnList = "slug"),
         @Index(name = "idx_shops_status", columnList = "shop_status"),
         @Index(name = "idx_shops_featured", columnList = "is_featured"),
-        @Index(name = "idx_shop_userId", columnList = "seller_id"),
-        @Index(name = "idx_shop_managerId", columnList = "manager_id"),
+      //   todo Check
+//        @Index(name = "idx_shop_managerId", columnList = "manager_id"),
+        @Index(name = "idx_shop_sellerId", columnList = "seller_id"),
         @Index(name = "idx_shop_shopId", columnList = "shop_id"),
         @Index(name = "idx_shop_name", columnList = "shop_name")
 })
@@ -103,17 +105,17 @@ public class Shop {
     private List<Goods> goods = new ArrayList<>();
 
     @Column(name = "commission_rate", precision = 5, scale = 4)
-    @Schema(description = "Commission rate taken by marketplace (e.g., 0.05 for 5%)\", example = \"0.05\"")
+    @Schema(description = "Commission rate taken by marketplace (e.g., 0.05 for 5%)", example = "0.05")
     private BigDecimal commissionRate;
 
     @Column(name = "last_activity_at")
-    @Schema(description = "Hour of remaining activity for the store (for example, remaining delivery of goods, processing orders)",
+    @Schema(description = "Last activity timestamp for the shop (for example, remaining delivery of goods, processing orders)",
             example = "2025-06-27T10:00:00Z", accessMode = Schema.AccessMode.READ_ONLY)
     private Instant lastActivityAt;
 
     @Column(name = "is_verified", nullable = false)
     @Builder.Default
-    @Schema(description = "Whether the store is verified by the marketplace (Like ID, TAX, Billing", example = "false")
+    @Schema(description = "Whether the store is verified by the marketplace (Like ID, TAX, Billing)", example = "false")
     private boolean isVerified = false;
 
     @Enumerated(EnumType.STRING)
@@ -148,8 +150,8 @@ public class Shop {
     private Instant lastModeratedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "moderated_by_user_id")
-    @Schema(description = "User ID of the admin who moderated the store. Read only.",
+    @JoinColumn(name = "moderated_by_user_id")
+    @Schema(description = "Admin user who moderated the store. Read only.",
             example = "123e4567-e89b-12d3-a456-426614174000",
             accessMode = Schema.AccessMode.READ_ONLY)
     private User moderatedByUser;
@@ -157,12 +159,14 @@ public class Shop {
     @NotBlank
     @Column(name = "currency", nullable = false, length = 5)
     @Builder.Default
+    @Size(max = 5, message = "Currency code must not exceed 5 characters")
     @Schema(description = "Store currency code ISO 4217", example = "UAH", requiredMode = Schema.RequiredMode.REQUIRED)
     private String currency = "UAH";
 
     @NotBlank
     @Column(name = "language", nullable = false, length = 5)
     @Builder.Default
+    @Size(max = 5, message = "Language code must not exceed 5 characters")
     @Schema(description = "Primary language of the shop (ISO 639-1)", example = "uk",
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String language = "uk";
@@ -170,6 +174,7 @@ public class Shop {
     @NotBlank
     @Column(name = "timezone", nullable = false, length = 50)
     @Builder.Default
+    @Size(max = 50, message = "Timezone must not exceed 50 characters")
     @Schema(description = "Timezone of the shop (IANA Time Zone Database)", example = "Europe/Kiev",
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String timezone = "Europe/Kiev";
@@ -191,6 +196,10 @@ public class Shop {
 //    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 //    @Schema(description = "Shop Tax Information")
 //    private ShopTaxInfo taxInfo;
+
+    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Schema(description = "SEO settings for the shop")
+    private ShopSeoSettings seoSettings;
 
     //todo connect to schema shopManagers
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
