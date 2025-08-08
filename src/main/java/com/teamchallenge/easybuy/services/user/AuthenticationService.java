@@ -34,7 +34,6 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
     private final CloudinaryImageService cloudinaryImageService;
-    private final PhoneValidationService phoneValidationService;
 
     public User register(RegisterRequestDto registerRequestDto) {
         if (userRepository.existsByEmail(registerRequestDto.getEmail()))
@@ -84,27 +83,17 @@ public class AuthenticationService {
     }
 
     public ResponseEntity<?> authenticate(LoginRequestDto request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(), request.getPassword()
-                    )
-            );
-            User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email : " + request.getEmail()));
-            if (!user.isEmailVerified()) {
-                throw new IllegalStateException("Email not confirmed");
-            }
-            return ResponseEntity.ok(generateToken(user));
-        } catch (BadCredentialsException ex) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body( "Incorrect login or password");
-        } catch (IllegalStateException ex) {
-            return ResponseEntity
-                    .status(HttpStatus.GONE)
-                    .body(ex.getMessage());
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(), request.getPassword()
+                )
+        );
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email : " + request.getEmail()));
+        if (!user.isEmailVerified()) {
+            throw new IllegalStateException("Email not confirmed");
         }
+        return ResponseEntity.ok(generateToken(user));
     }
 
     public AuthResponseDto generateToken(User user) {
