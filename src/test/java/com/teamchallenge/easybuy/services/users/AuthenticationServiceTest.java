@@ -2,6 +2,8 @@ package com.teamchallenge.easybuy.services.users;
 
 import com.teamchallenge.easybuy.dto.user.AuthResponseDto;
 import com.teamchallenge.easybuy.dto.user.ChangePasswordDto;
+import com.teamchallenge.easybuy.dto.user.LoginRequestDto;
+import com.teamchallenge.easybuy.dto.user.RegisterRequestDto;
 import com.teamchallenge.easybuy.models.user.Customer;
 import com.teamchallenge.easybuy.models.user.Role;
 import com.teamchallenge.easybuy.models.user.Token;
@@ -19,13 +21,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -69,6 +74,66 @@ public class AuthenticationServiceTest {
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    @DisplayName("register should create new customer when data is valid")
+    void register_ShouldCreateCustomer_WhenDataValid() {
+        RegisterRequestDto requestDto = new RegisterRequestDto();
+        requestDto.setEmail("new@example.com");
+        requestDto.setPassword("pass");
+        requestDto.setConfirmPassword("pass");
+        requestDto.setRole("CUSTOMER");
+
+        when(userRepository.existsByEmail(requestDto.getEmail())).thenReturn(false);
+        when(passwordEncoder.encode(requestDto.getPassword())).thenReturn("encoded");
+        when(cloudinaryImageService.generateAvatarUrl(requestDto.getEmail())).thenReturn("avatar");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = authenticationService.register(requestDto);
+
+        assertEquals("new@example.com", result.getEmail());
+        assertEquals("encoded", result.getPassword());
+        assertEquals(Role.CUSTOMER, result.getRole());
+        assertEquals("avatar", result.getAvatarUrl());
+        verify(userRepository).save(result);
+    }
+
+    @Test
+    @DisplayName("register should throw when email already exists")
+    void register_ShouldThrow_WhenEmailExists() {
+        RegisterRequestDto requestDto = new RegisterRequestDto();
+        requestDto.setEmail(user.getEmail());
+        requestDto.setPassword("pass");
+        requestDto.setConfirmPassword("pass");
+        requestDto.setRole("CUSTOMER");
+
+        when(userRepository.existsByEmail(requestDto.getEmail())).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () -> authenticationService.register(requestDto));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("authenticate should return tokens when credentials valid and email verified")
+    void authenticate_ShouldReturnTokens_WhenValid() {
+        LoginRequestDto loginRequestDto = new LoginRequestDto();
+        loginRequestDto.setEmail(user.getEmail());
+        loginRequestDto.setPassword("pass");
+
+        user.setEmailVerified(true);
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(null);
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(jwtService.generateAccessToken(user.getEmail(), user.getRole().name())).thenReturn("access");
+        when(jwtService.generateRefreshToken(user.getEmail(), user.getRole().name())).thenReturn("refresh");
+
+        ResponseEntity<?> response = authenticationService.authenticate(loginRequestDto);
+        AuthResponseDto body = (AuthResponseDto) response.getBody();
+
+        assertEquals("access", body.getAccessToken());
+        assertEquals("refresh", body.getRefreshToken());
+        verify(tokenService).createToken(user, "refresh");
     }
 
     @Test
@@ -177,5 +242,42 @@ public class AuthenticationServiceTest {
 
         assertThrows(ResponseStatusException.class, () -> authenticationService.changePassword(changePasswordDto));
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updateAvatarUrl should update avatar for current user")
+    void updateAvatarUrl_ShouldUpdateAvatar() {
+        String newUrl = "newAvatar";
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn(user.getEmail());
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        authenticationService.updateAvatarUrl(newUrl);
+
+        assertEquals(newUrl, user.getAvatarUrl());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    @DisplayName("deleteAvatarUrl should remove image and set default for customer")
+    void deleteAvatarUrl_ShouldSetDefaultForCustomer() throws IOException {
+        user.setAvatarUrl("http://example.com/image.jpg");
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn(user.getEmail());
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(cloudinaryImageService.extractPublicIdFromUrl(user.getAvatarUrl())).thenReturn("publicId");
+        when(cloudinaryImageService.generateAvatarUrl(user.getAvatarUrl())).thenReturn("default");
+
+        authenticationService.deleteAvatarUrl();
+
+        verify(cloudinaryImageService).deleteImage("publicId");
+        assertEquals("default", user.getAvatarUrl());
+        verify(userRepository).save(user);
     }
 }
