@@ -63,7 +63,7 @@ public class PasswordResetService {
     }
 
     @Transactional
-    void deleteAllByUser(User user) {
+    public void deleteAllByUser(User user) {
         passwordResetTokenRepository.deleteAllByUser(user);
     }
 }
