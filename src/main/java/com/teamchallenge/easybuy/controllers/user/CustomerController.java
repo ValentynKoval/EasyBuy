@@ -55,9 +55,9 @@ public class CustomerController {
             @ApiResponse(responseCode = "404", description = "Profile not found")
     })
     @PutMapping("/profile")
-    public ResponseEntity<?> updateCustomerProfile(@Valid @RequestBody CustomerProfileDto customer, HttpServletRequest request) {
+    public ResponseEntity<?> updateCustomerProfile(@Valid @RequestBody CustomerProfileDto customer) {
         System.out.println("1");
-        return ResponseEntity.ok(customerService.updateCustomerProfile(customer, request));
+        return ResponseEntity.ok(customerService.updateCustomerProfile(customer));
     }
 
     @Operation(summary = "Changing user address information", description = "Obtaining updated user addresses")

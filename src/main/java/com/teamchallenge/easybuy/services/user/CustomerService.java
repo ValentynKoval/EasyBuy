@@ -38,7 +38,7 @@ public class CustomerService {
                 addressMapper.toDto(customer.getAddress()));
     }
 
-    public CustomerProfileDto updateCustomerProfile(CustomerProfileDto customerProfile, HttpServletRequest request) {
+    public CustomerProfileDto updateCustomerProfile(CustomerProfileDto customerProfile) {
         Customer customer = getCustomer();
         customer.setName(customerProfile.getName());
         customer.setBirthday(customerProfile.getBirthday());
