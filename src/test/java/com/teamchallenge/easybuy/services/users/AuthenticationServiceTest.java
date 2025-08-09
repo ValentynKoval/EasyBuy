@@ -272,10 +272,11 @@ public class AuthenticationServiceTest {
         SecurityContextHolder.setContext(securityContext);
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(cloudinaryImageService.extractPublicIdFromUrl(user.getAvatarUrl())).thenReturn("publicId");
-        when(cloudinaryImageService.generateAvatarUrl(user.getAvatarUrl())).thenReturn("default");
+        when(cloudinaryImageService.generateAvatarUrl(eq(user.getEmail()))).thenReturn("default");
 
         authenticationService.deleteAvatarUrl();
 
+        verify(cloudinaryImageService).generateAvatarUrl(eq(user.getEmail()));
         verify(cloudinaryImageService).deleteImage("publicId");
         assertEquals("default", user.getAvatarUrl());
         verify(userRepository).save(user);
