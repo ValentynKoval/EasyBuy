@@ -48,7 +48,7 @@ public class Goods {
     @Column(name = "description")
     @Schema(description = "Detailed description of the product", example = "A high-precision wireless mouse with ergonomic design.")
     private String description;
-
+    // todo chfnge to int and add converter servises
     @NotNull
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     @Schema(description = "Price of the product", example = "1499.99")

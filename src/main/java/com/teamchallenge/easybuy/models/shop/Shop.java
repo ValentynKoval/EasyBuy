@@ -180,9 +180,14 @@ public class Shop {
     private String timezone = "Europe/Kiev";
 
 
-    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Schema(description = "Shop contact information")
     private List<ShopContactInfo> shopContactInfo = new ArrayList<>();
+
+    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    @Schema(description = "History of moderation actions for this shop")
+    private List<ShopModerationHistory> moderationHistory = new ArrayList<>();
 
     //todo map to db schema`s
 //    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
