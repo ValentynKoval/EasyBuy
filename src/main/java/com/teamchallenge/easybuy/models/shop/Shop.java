@@ -3,13 +3,10 @@ package com.teamchallenge.easybuy.models.shop;
 import com.teamchallenge.easybuy.models.goods.Goods;
 import com.teamchallenge.easybuy.models.user.Manager;
 import com.teamchallenge.easybuy.models.user.Seller;
-import com.teamchallenge.easybuy.models.shop.ShopContactInfo;
 import com.teamchallenge.easybuy.models.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -19,15 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
 @Entity
 @Table(name = "shops", indexes = {
-
         @Index(name = "idx_shops_slug", columnList = "slug"),
         @Index(name = "idx_shops_status", columnList = "shop_status"),
         @Index(name = "idx_shops_featured", columnList = "is_featured"),
-      //   todo Check
-//        @Index(name = "idx_shop_managerId", columnList = "manager_id"),
         @Index(name = "idx_shop_sellerId", columnList = "seller_id"),
         @Index(name = "idx_shop_shopId", columnList = "shop_id"),
         @Index(name = "idx_shop_name", columnList = "shop_name")
@@ -37,6 +30,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"goods", "shopContactInfo", "moderationHistory", "shopManagers", "seoSettings", "seller", "moderatedByUser"})
 @Schema(description = "Base information for a shop.")
 public class Shop {
 
@@ -44,11 +39,13 @@ public class Shop {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "shop_id", nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
     @Schema(description = "Unique shop ID. Just for database. Read only", example = "e3b0c442-98fc-4629-8b9c-a5de62ed1df1",
             accessMode = Schema.AccessMode.READ_ONLY)
     private UUID shopId;
 
     @NotNull
+    @Size(min = 1, max = 100)
     @Column(name = "shop_name", nullable = false, unique = true, length = 100)
     @Schema(description = "Name of the shop. Max Length = 100.", example = "MyStore",
             requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 100, minLength = 1)
@@ -63,7 +60,10 @@ public class Shop {
     private String shopDescription;
 
     @NotNull
-    @Column(name = "slug", unique = true)
+    @Size(min = 1, max = 150)
+    @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "Slug may contain only lowercase Latin letters, numbers and hyphens between words")
+    @Column(name = "slug", unique = true, length = 150)
+    @EqualsAndHashCode.Include
     @Schema(description = "SEO-friendly identifier", example = "mystore")
     private String slug;
 
@@ -77,7 +77,6 @@ public class Shop {
     @Builder.Default
     @Schema(description = "Indicates if the shop is featured or recommended on the main page.", example = "false")
     private boolean isFeatured = false;
-
 
     public enum ShopStatus {
         @Schema(description = "Store is active and available for buyers")
@@ -104,6 +103,8 @@ public class Shop {
     @Schema(description = "List of goods available in your store")
     private List<Goods> goods = new ArrayList<>();
 
+    @DecimalMin(value = "0.0000")
+    @DecimalMax(value = "1.0000")
     @Column(name = "commission_rate", precision = 5, scale = 4)
     @Schema(description = "Commission rate taken by marketplace (e.g., 0.05 for 5%)", example = "0.05")
     private BigDecimal commissionRate;
@@ -179,9 +180,9 @@ public class Shop {
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String timezone = "Europe/Kiev";
 
-
-    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Schema(description = "Shop contact information")
+    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    @Schema(description = "Shop contact information records")
     private List<ShopContactInfo> shopContactInfo = new ArrayList<>();
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -189,30 +190,19 @@ public class Shop {
     @Schema(description = "History of moderation actions for this shop")
     private List<ShopModerationHistory> moderationHistory = new ArrayList<>();
 
-    //todo map to db schema`s
-//    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    @Schema(description = "Shop Analytics")
-//    private ShopAnalytics analytics;
-//
-//    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    @Schema(description = "Shop Billing Information")
-//    private ShopBillingInfo billingInfo;
-//
-//    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    @Schema(description = "Shop Tax Information")
-//    private ShopTaxInfo taxInfo;
-
     @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Schema(description = "SEO settings for the shop")
     private ShopSeoSettings seoSettings;
 
-    //todo connect to schema shopManagers
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     @Schema(description = "List of manager link records for this shop")
     private List<Manager> shopManagers = new ArrayList<>();
 
-    // --- Fields for autofill and maintenance ---
+    @Version
+    @Column(name = "version", nullable = false)
+    @Schema(description = "Optimistic lock version. Read only.", accessMode = Schema.AccessMode.READ_ONLY)
+    private long version;
 
     @Column(name = "created_at", updatable = false)
     @Schema(description = "The time the store was created. Set automatically on first save.", example = "2025-05-28T11:21:00Z",
@@ -225,24 +215,83 @@ public class Shop {
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant updatedAt;
 
+    // Lifecycle callbacks
 
-    //- is called automatically before the first preservation of the essence
-    //- sets the current time in the createdAt field
-    //- sets the default values if they are not installed
     @PrePersist
     protected void onCreate() {
-        this.createdAt = Instant.now();
+        Instant now = Instant.now();
+        this.createdAt = now;
+        this.updatedAt = now;
         if (this.currency == null) this.currency = "UAH";
         if (this.language == null) this.language = "uk";
         if (this.timezone == null) this.timezone = "Europe/Kiev";
     }
 
-    //- is called automatically before each renewal of essence
-    //- updatedAt and Lastactivity is updated by the current time
     @PreUpdate
     @Schema(hidden = true)
     protected void onUpdate() {
         this.updatedAt = Instant.now();
         this.lastActivityAt = Instant.now();
+    }
+
+    // Helpers to maintain bidirectional consistency
+
+    public void addGood(Goods good) {
+        if (good == null) return;
+        this.goods.add(good);
+        good.setShop(this);
+    }
+
+    public void removeGood(Goods good) {
+        if (good == null) return;
+        this.goods.remove(good);
+        good.setShop(null);
+    }
+
+    public void addContactInfo(ShopContactInfo info) {
+        if (info == null) return;
+        this.shopContactInfo.add(info);
+        info.setShop(this);
+    }
+
+    public void removeContactInfo(ShopContactInfo info) {
+        if (info == null) return;
+        this.shopContactInfo.remove(info);
+        info.setShop(null);
+    }
+
+    public void addModerationRecord(ShopModerationHistory record) {
+        if (record == null) return;
+        this.moderationHistory.add(record);
+        record.setShop(this);
+    }
+
+    public void removeModerationRecord(ShopModerationHistory record) {
+        if (record == null) return;
+        this.moderationHistory.remove(record);
+        record.setShop(null);
+    }
+
+    public void addManager(Manager manager) {
+        if (manager == null) return;
+        this.shopManagers.add(manager);
+        manager.setShop(this);
+    }
+
+    public void removeManager(Manager manager) {
+        if (manager == null) return;
+        this.shopManagers.remove(manager);
+        manager.setShop(null);
+    }
+
+    public void setSeoSettings(ShopSeoSettings seoSettings) {
+        // detach previous
+        if (this.seoSettings != null) {
+            this.seoSettings.setShop(null);
+        }
+        this.seoSettings = seoSettings;
+        if (seoSettings != null) {
+            seoSettings.setShop(this);
+        }
     }
 }
