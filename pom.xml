@@ -158,6 +158,12 @@
             <artifactId>libphonenumber</artifactId>
             <version>8.13.23</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-vault-config -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-vault-config</artifactId>
+            <version>5.0.0-M4</version>
+        </dependency>
     </dependencies>
 
     <build>
