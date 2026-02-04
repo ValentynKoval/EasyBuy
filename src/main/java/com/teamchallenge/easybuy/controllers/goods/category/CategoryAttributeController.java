@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.controllers.goods.category;
 
 import com.teamchallenge.easybuy.dto.goods.category.CategoryAttributeDTO;
 import com.teamchallenge.easybuy.models.goods.category.AttributeType;
+import com.teamchallenge.easybuy.services.goods.category.CategoryAttributeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.teamchallenge.easybuy.services.goods.category.CategoryAttributeService;
 
 import java.util.List;
 import java.util.UUID;

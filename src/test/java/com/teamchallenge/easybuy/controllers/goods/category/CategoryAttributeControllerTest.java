@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.controllers.goods.category;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamchallenge.easybuy.dto.goods.category.CategoryAttributeDTO;
+import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 import com.teamchallenge.easybuy.exceptions.goods.CategoryAttributeException;
 import com.teamchallenge.easybuy.models.goods.category.AttributeType;
 import com.teamchallenge.easybuy.services.goods.category.CategoryAttributeService;
@@ -22,8 +23,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryAttributeControllerTest {
@@ -38,8 +39,8 @@ class CategoryAttributeControllerTest {
 
     private ObjectMapper objectMapper;
 
-    private UUID id = UUID.randomUUID();
-    private UUID categoryId = UUID.randomUUID();
+    private final UUID id = UUID.randomUUID();
+    private final UUID categoryId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {

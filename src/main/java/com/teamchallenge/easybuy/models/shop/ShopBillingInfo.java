@@ -1,17 +1,11 @@
 package com.teamchallenge.easybuy.models.shop;
 
+import com.teamchallenge.easybuy.persistence.converter.CryptoStringConverter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import jakarta.persistence.Convert;
-import com.teamchallenge.easybuy.persistence.converter.CryptoStringConverter;
-
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -55,7 +49,8 @@ public class ShopBillingInfo {
     @Convert(converter = CryptoStringConverter.class)
     @NotBlank(message = "PayPal client secret is required")
     @Size(max = 255, message = "Client secret must not exceed 255 characters")
-    @Column(name = "paypal_client_secret", length = 255) // У реальних системах цей секрет має бути зашифрований або зберігатися в безпечному сховищі!
+    @Column(name = "paypal_client_secret", length = 255)
+    // У реальних системах цей секрет має бути зашифрований або зберігатися в безпечному сховищі!
     @Schema(description = "PayPal application client secret (should be securely stored)", example = "EH_YOUR_CLIENT_SECRET_EXAMPLE", requiredMode = Schema.RequiredMode.REQUIRED)
     private String paypalClientSecret;
 

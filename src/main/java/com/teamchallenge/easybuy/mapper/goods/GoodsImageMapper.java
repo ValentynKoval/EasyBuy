@@ -4,8 +4,8 @@ import com.teamchallenge.easybuy.dto.goods.GoodsImageDTO;
 import com.teamchallenge.easybuy.models.goods.GoodsImage;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 import org.mapstruct.ReportingPolicy;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface GoodsImageMapper {

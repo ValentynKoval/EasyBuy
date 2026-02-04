@@ -16,7 +16,7 @@ import java.util.List;
 public class TokenService {
     private final TokenRepository tokenRepository;
 
-    @Value( "${jwt.refreshTokenExpiration}")
+    @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenDurationMs;
 
     public void createToken(User user, String refreshToken) {

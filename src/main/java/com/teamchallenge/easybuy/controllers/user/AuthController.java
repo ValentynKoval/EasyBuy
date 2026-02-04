@@ -32,7 +32,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final EmailConfirmationService emailConfirmationService;
     private final PasswordResetService passwordResetService;
-    private final CloudinaryImageService  cloudinaryImageService;
+    private final CloudinaryImageService cloudinaryImageService;
 
     @Operation(summary = "User registration", description = "Receives registration data and sends a link to the email address to confirm it. The link looks like this: \".../confirm?token=...\"")
     @ApiResponses(value = {

@@ -156,31 +156,16 @@ public class ShopContactInfo {
     @Enumerated(EnumType.STRING)
     @Schema(description = "Preferred method of contact", example = "EMAIL")
     private ContactMethod preferredContactMethod;
-
-    public enum ContactMethod {
-        @Schema(description = "Contact via email")
-        EMAIL,
-        @Schema(description = "Contact via phone")
-        PHONE,
-        @Schema(description = "Contact via website")
-        WEBSITE,
-        @Schema(description = "Contact via social media")
-        SOCIAL_MEDIA
-    }
-
-    // --- Timestamps ---
-
     @Column(name = "created_at", updatable = false)
     @Schema(description = "When the contact info was created", example = "2025-01-15T10:30:00Z",
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant createdAt;
 
+    // --- Timestamps ---
     @Column(name = "updated_at")
     @Schema(description = "When the contact info was last updated", example = "2025-01-15T10:30:00Z",
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant updatedAt;
-
-    // --- Business methods ---
 
     /**
      * Check if contact information is complete
@@ -190,6 +175,8 @@ public class ShopContactInfo {
                 contactPhone != null && !contactPhone.trim().isEmpty() &&
                 businessAddress != null && !businessAddress.trim().isEmpty();
     }
+
+    // --- Business methods ---
 
     /**
      * Get primary contact email
@@ -253,16 +240,27 @@ public class ShopContactInfo {
         return info.toString();
     }
 
-    // --- Lifecycle methods ---
-
     @PrePersist
     protected void onCreate() {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
+    // --- Lifecycle methods ---
+
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = Instant.now();
+    }
+
+    public enum ContactMethod {
+        @Schema(description = "Contact via email")
+        EMAIL,
+        @Schema(description = "Contact via phone")
+        PHONE,
+        @Schema(description = "Contact via website")
+        WEBSITE,
+        @Schema(description = "Contact via social media")
+        SOCIAL_MEDIA
     }
 }

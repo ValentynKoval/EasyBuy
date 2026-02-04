@@ -28,10 +28,6 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final UserDetailsServiceImpl userDetailsService;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
-
     private static final String[] AUTH_WHITELIST = {"/api/auth/login",
             "/api/auth/register",
             "/api/auth/refresh",
@@ -50,6 +46,9 @@ public class SecurityConfig {
             "/webjars/**",
             "/api/goods-images/**"
     };
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {

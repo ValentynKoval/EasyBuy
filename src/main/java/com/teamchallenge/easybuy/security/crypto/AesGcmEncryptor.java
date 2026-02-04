@@ -17,7 +17,7 @@ import java.util.Objects;
  * A utility class for encrypting and decrypting data using AES-256 GCM.
  * This class uses a passphrase stored in an environment variable for key derivation.
  * The output is a Base64-encoded string in a specific format: "version$salt$iv$ciphertext".
- *
+ * <p>
  * This approach is suitable for encrypting sensitive data like personal information,
  * ensuring it is securely stored and transmitted.
  */
@@ -30,7 +30,8 @@ public final class AesGcmEncryptor {
     private static final int PBKDF2_ITERATIONS = 210_000;
     private static final SecureRandom RNG = new SecureRandom();
 
-    private AesGcmEncryptor() {}
+    private AesGcmEncryptor() {
+    }
 
     /**
      * Encrypts a plaintext string using AES-256 GCM.
@@ -65,7 +66,7 @@ public final class AesGcmEncryptor {
      * @param payload The Base64-encoded encrypted string.
      * @return The original plaintext string.
      * @throws IllegalArgumentException if the payload format is invalid or the version is unsupported.
-     * @throws IllegalStateException if decryption fails or the passphrase is not set.
+     * @throws IllegalStateException    if decryption fails or the passphrase is not set.
      */
     public static String decrypt(String payload) {
         if (payload == null) return null;
@@ -113,6 +114,11 @@ public final class AesGcmEncryptor {
         return out;
     }
 
-    private static String b64(byte[] b) { return Base64.getEncoder().encodeToString(b); }
-    private static byte[] b64d(String s) { return Base64.getDecoder().decode(s); }
+    private static String b64(byte[] b) {
+        return Base64.getEncoder().encodeToString(b);
+    }
+
+    private static byte[] b64d(String s) {
+        return Base64.getDecoder().decode(s);
+    }
 }

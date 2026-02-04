@@ -85,6 +85,7 @@ public class GoodsSpecifications {
                     : cb.lessThanOrEqualTo(root.get("updatedAt"), to);
         };
     }
+
     public static Specification<Goods> hasCategoryIn(Category... categories) {
         return (root, query, cb) -> {
             if (categories == null || categories.length == 0) return null;

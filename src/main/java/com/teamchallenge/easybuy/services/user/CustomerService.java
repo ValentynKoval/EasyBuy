@@ -55,7 +55,7 @@ public class CustomerService {
     public AddressDto updateCustomerAddress(AddressDto addressDto) {
         Customer customer = getCustomer();
         Address address = customer.getAddress();
-        if  (address == null) {
+        if (address == null) {
             address = new Address();
             customer.setAddress(address);
         }

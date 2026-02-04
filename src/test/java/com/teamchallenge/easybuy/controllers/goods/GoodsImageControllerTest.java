@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.controllers.goods;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamchallenge.easybuy.dto.goods.GoodsImageDTO;
+import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 import com.teamchallenge.easybuy.exceptions.goods.GoodsImageException;
 import com.teamchallenge.easybuy.services.goods.image.GoodsImageService;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +23,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class GoodsImageControllerTest {

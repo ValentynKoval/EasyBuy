@@ -14,7 +14,7 @@ public class EmailConfirmationToken {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column( name = "token", nullable = false, unique = true)
+    @Column(name = "token", nullable = false, unique = true)
     private String token;
 
     @ManyToOne

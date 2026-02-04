@@ -1,17 +1,17 @@
 package com.teamchallenge.easybuy.persistence.converter;
 
+import com.teamchallenge.easybuy.security.crypto.AesGcmEncryptor;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import com.teamchallenge.easybuy.security.crypto.AesGcmEncryptor;
 
 /**
  * A JPA {@link AttributeConverter} that automatically encrypts and decrypts
  * String attributes using the {@link AesGcmEncryptor}.
- *
+ * <p>
  * This converter ensures that sensitive string data, such as personal details,
  * is stored in the database in an encrypted format and is transparently
  * decrypted when read by the application.
- *
+ * <p>
  * To use this converter on a specific entity field, annotate it with
  * {@code @Convert(converter = CryptoStringConverter.class)}.
  *
@@ -22,7 +22,7 @@ public class CryptoStringConverter implements AttributeConverter<String, String>
 
     /**
      * Converts a plaintext String attribute to an encrypted format for storage in the database column.
-     *
+     * <p>
      * The method uses the {@link AesGcmEncryptor#encrypt(String)} method. If the attribute is null or blank,
      * it is returned as is.
      *
@@ -37,7 +37,7 @@ public class CryptoStringConverter implements AttributeConverter<String, String>
 
     /**
      * Converts an encrypted String from a database column back to a plaintext String for the entity attribute.
-     *
+     * <p>
      * The method checks if the data has the expected encryption format ("v1$...") before attempting decryption.
      * This allows for graceful handling of unencrypted data (e.g., during a migration period).
      *

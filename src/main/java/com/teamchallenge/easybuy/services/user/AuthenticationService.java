@@ -99,7 +99,7 @@ public class AuthenticationService {
         } catch (BadCredentialsException ex) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body( "Incorrect login or password");
+                    .body("Incorrect login or password");
         } catch (IllegalStateException ex) {
             return ResponseEntity
                     .status(HttpStatus.GONE)

@@ -1,5 +1,6 @@
 package com.teamchallenge.easybuy.models.shop;
 
+import com.teamchallenge.easybuy.models.BaseEntity;
 import com.teamchallenge.easybuy.models.goods.Goods;
 import com.teamchallenge.easybuy.models.user.Manager;
 import com.teamchallenge.easybuy.models.user.Seller;
@@ -9,6 +10,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -17,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "shops", indexes = {
         @Index(name = "idx_shops_slug", columnList = "slug"),
         @Index(name = "idx_shops_status", columnList = "shop_status"),
@@ -33,7 +38,7 @@ import java.util.UUID;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = {"goods", "shopContactInfo", "moderationHistory", "shopManagers", "seoSettings", "seller", "moderatedByUser"})
 @Schema(description = "Base information for a shop.")
-public class Shop {
+public class Shop extends BaseEntity {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -60,14 +65,6 @@ public class Shop {
     private String shopDescription;
 
     @NotNull
-    @Size(min = 1, max = 150)
-    @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "Slug may contain only lowercase Latin letters, numbers and hyphens between words")
-    @Column(name = "slug", unique = true, length = 150)
-    @EqualsAndHashCode.Include
-    @Schema(description = "SEO-friendly identifier", example = "mystore")
-    private String slug;
-
-    @NotNull
     @Column(name = "shop_status", nullable = false)
     @Enumerated(EnumType.STRING)
     @Schema(description = "Status of the shop", example = "ACTIVE")
@@ -77,19 +74,6 @@ public class Shop {
     @Builder.Default
     @Schema(description = "Indicates if the shop is featured or recommended on the main page.", example = "false")
     private boolean isFeatured = false;
-
-    public enum ShopStatus {
-        @Schema(description = "Store is active and available for buyers")
-        ACTIVE,
-        @Schema(description = "Store is inactive and temporarily unavailable")
-        INACTIVE,
-        @Schema(description = "Store is awaiting administrator review before activation")
-        PENDING,
-        @Schema(description = "Store is blocked due to policy violations")
-        BANNED,
-        @Schema(description = "Store is rejected due to policy violations")
-        REJECTED
-    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
@@ -123,17 +107,6 @@ public class Shop {
     @Column(name = "shop_type")
     @Schema(description = "Type of store, e.g. Sale, Manufacturer, Reseller", example = "Producer")
     private ShopType shopType;
-
-    public enum ShopType {
-        @Schema(description = "A store that sells goods to other users")
-        RETAILER,
-        @Schema(description = "A store that manufactures goods itself")
-        PRODUCER,
-        @Schema(description = "A store that resells goods from other manufacturers")
-        RESELLER,
-        @Schema(description = "Another, unclassified type of store")
-        OTHER
-    }
 
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     @Schema(description = "Reason for rejection of the store", example = "Store is not suitable for selling goods")
@@ -204,37 +177,20 @@ public class Shop {
     @Schema(description = "Optimistic lock version. Read only.", accessMode = Schema.AccessMode.READ_ONLY)
     private long version;
 
-    @Column(name = "created_at", updatable = false)
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
     @Schema(description = "The time the store was created. Set automatically on first save.", example = "2025-05-28T11:21:00Z",
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant createdAt;
 
-    @Column(name = "updated_at")
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
     @Schema(description = "The time the store was last updated. Set automatically each time the entity is updated.",
             example = "2025-05-28T11:21:00Z",
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant updatedAt;
 
     // Lifecycle callbacks
-
-    @PrePersist
-    protected void onCreate() {
-        Instant now = Instant.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-        if (this.currency == null) this.currency = "UAH";
-        if (this.language == null) this.language = "uk";
-        if (this.timezone == null) this.timezone = "Europe/Kiev";
-    }
-
-    @PreUpdate
-    @Schema(hidden = true)
-    protected void onUpdate() {
-        this.updatedAt = Instant.now();
-        this.lastActivityAt = Instant.now();
-    }
-
-    // Helpers to maintain bidirectional consistency
 
     public void addGood(Goods good) {
         if (good == null) return;
@@ -247,6 +203,8 @@ public class Shop {
         this.goods.remove(good);
         good.setShop(null);
     }
+
+    // Helpers to maintain bidirectional consistency
 
     public void addContactInfo(ShopContactInfo info) {
         if (info == null) return;
@@ -293,5 +251,29 @@ public class Shop {
         if (seoSettings != null) {
             seoSettings.setShop(this);
         }
+    }
+
+    public enum ShopStatus {
+        @Schema(description = "Store is active and available for buyers")
+        ACTIVE,
+        @Schema(description = "Store is inactive and temporarily unavailable")
+        INACTIVE,
+        @Schema(description = "Store is awaiting administrator review before activation")
+        PENDING,
+        @Schema(description = "Store is blocked due to policy violations")
+        BANNED,
+        @Schema(description = "Store is rejected due to policy violations")
+        REJECTED
+    }
+
+    public enum ShopType {
+        @Schema(description = "A store that sells goods to other users")
+        RETAILER,
+        @Schema(description = "A store that manufactures goods itself")
+        PRODUCER,
+        @Schema(description = "A store that resells goods from other manufacturers")
+        RESELLER,
+        @Schema(description = "Another, unclassified type of store")
+        OTHER
     }
 }

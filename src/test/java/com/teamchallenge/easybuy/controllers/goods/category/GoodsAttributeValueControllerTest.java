@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.controllers.goods.category;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamchallenge.easybuy.dto.goods.category.GoodsAttributeValueDTO;
+import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 import com.teamchallenge.easybuy.exceptions.goods.GoodsAttributeValueException;
 import com.teamchallenge.easybuy.services.goods.category.GoodsAttributeValueService;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +22,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class GoodsAttributeValueControllerTest {
@@ -37,9 +38,9 @@ class GoodsAttributeValueControllerTest {
 
     private ObjectMapper objectMapper;
 
-    private UUID id = UUID.randomUUID();
-    private UUID goodsId = UUID.randomUUID();
-    private UUID attributeId = UUID.randomUUID();
+    private final UUID id = UUID.randomUUID();
+    private final UUID goodsId = UUID.randomUUID();
+    private final UUID attributeId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {

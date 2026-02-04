@@ -11,10 +11,11 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Entity
-public class Seller extends User{
+public class Seller extends User {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Address address;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id")
     private Shop shop;
 }

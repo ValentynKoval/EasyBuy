@@ -1,18 +1,23 @@
 package com.teamchallenge.easybuy.models.user;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import com.teamchallenge.easybuy.models.shop.Shop;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
+@Data
 @AllArgsConstructor
 @RequiredArgsConstructor
+@EqualsAndHashCode(callSuper = true, exclude = {"shop", "seller"})
+@ToString(exclude = {"shop", "seller"})
 @Entity
-public class Manager extends User{
+public class Manager extends User {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id")
+    private Shop shop;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "seller_id")
     private Seller seller;

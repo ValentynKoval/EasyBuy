@@ -29,9 +29,9 @@ public class CloudinaryImageService {
      * Uploads an image to Cloudinary into a specific folder structure.
      * The folder path will be: "easybuy/shops/{shopId}/goods/{goodsArt}"
      *
-     * @param file    Multipart file to be uploaded.
-//     * @param shopId  The UUID of the shop, used for folder creation.
-//     * @param goodsArt The article number of the goods, used for folder creation.
+     * @param file Multipart file to be uploaded.
+     *             //     * @param shopId  The UUID of the shop, used for folder creation.
+     *             //     * @param goodsArt The article number of the goods, used for folder creation.
      * @return Public URL of the uploaded image.
      * @throws IOException if upload fails.
      */
@@ -123,7 +123,7 @@ public class CloudinaryImageService {
         if (words.length == 1) {
             return words[0].substring(0, Math.min(2, words[0].length())).toUpperCase();
         } else {
-            return (words[0].substring(0,1) + words[1].substring(0,1)).toUpperCase();
+            return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
         }
     }
 
@@ -136,10 +136,10 @@ public class CloudinaryImageService {
     }
 
     private String pickTextColor(String bgHex) {
-        int r = Integer.parseInt(bgHex.substring(0,2), 16);
-        int g = Integer.parseInt(bgHex.substring(2,4), 16);
-        int b = Integer.parseInt(bgHex.substring(4,6), 16);
-        double luminance = (0.299*r + 0.587*g + 0.114*b) / 255;
+        int r = Integer.parseInt(bgHex.substring(0, 2), 16);
+        int g = Integer.parseInt(bgHex.substring(2, 4), 16);
+        int b = Integer.parseInt(bgHex.substring(4, 6), 16);
+        double luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         return (luminance > 0.5) ? "000000" : "FFFFFF";
     }
 
@@ -150,7 +150,7 @@ public class CloudinaryImageService {
 
         String cloudName = cloudinary.config.cloudName;
 
-        return String.format("https://res.cloudinary.com/%s/image/upload/"+
+        return String.format("https://res.cloudinary.com/%s/image/upload/" +
                         "w_400,h_400,c_fill,b_rgb:%s,co_rgb:%s," +
                         "l_text:Roboto_400_bold:%s/empty",
                 cloudName, bgColor, textColor, initials);

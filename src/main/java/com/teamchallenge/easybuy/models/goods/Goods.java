@@ -86,60 +86,42 @@ public class Goods {
     @Column(name = "goodsStatus", nullable = false)
     @Schema(description = "Status of the product", example = "ACTIVE")
     private GoodsStatus goodsStatus;
-
-    public enum GoodsStatus {
-        @Schema(description = "Product is active and available for purchase", example = "ACTIVE")
-        ACTIVE,
-        @Schema(description = "Product is inactive and not available", example = "INACTIVE")
-        INACTIVE,
-        @Schema(description = "Product is archived and no longer sold", example = "ARCHIVED")
-        ARCHIVED
-    }
-
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "discountStatus", nullable = false)
     @Schema(description = "Discount status of the product", example = "NONE")
     private DiscountStatus discountStatus;
-
-    public enum DiscountStatus {
-        @Schema(description = "No discount applied", example = "NONE")
-        NONE,
-        @Schema(description = "Discount is active", example = "ACTIVE")
-        ACTIVE,
-        @Schema(description = "Discount has expired", example = "EXPIRED")
-        EXPIRED
-    }
-
     @Column(name = "discountValue", precision = 10, scale = 2)
     @Schema(description = "Discount value if applicable", example = "10.00")
     private BigDecimal discountValue;
-
     @Column(name = "rating")
     @Schema(description = "Average rating of the product", example = "4")
     private Integer rating;
-
     @Column(name = "slug", unique = true)
     @Schema(description = "SEO-friendly slug for the product", example = "wireless-mouse-123")
     private String slug;
-
     @Column(name = "meta_title")
     @Schema(description = "Meta title for SEO", example = "Wireless Mouse - Best Price")
     private String metaTitle;
-
     @Column(name = "meta_description")
     @Schema(description = "Meta description for SEO", example = "High-quality wireless mouse at the best price.")
     private String metaDescription;
-
     @Column(name = "created_at", updatable = false)
     @Schema(description = "Timestamp when the product was created", example = "2025-05-28T11:21:00Z",
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant createdAt;
-
     @Column(name = "updated_at")
     @Schema(description = "Timestamp when the product was last updated", example = "2025-05-28T11:21:00Z",
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant updatedAt;
+    /**
+     * List of additional images associated with this product.
+     * Cascade operations are enabled. Orphan removal ensures deleted images are removed from DB.
+     */
+    @OneToMany(mappedBy = "goods", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @Schema(description = "List of additional images for the product")
+    private List<GoodsImage> additionalImages = new ArrayList<>();
 
     @PrePersist
     @Schema(hidden = true)
@@ -153,12 +135,21 @@ public class Goods {
         this.updatedAt = Instant.now();
     }
 
-    /**
-     * List of additional images associated with this product.
-     * Cascade operations are enabled. Orphan removal ensures deleted images are removed from DB.
-     */
-    @OneToMany(mappedBy = "goods", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    @Schema(description = "List of additional images for the product")
-    private List<GoodsImage> additionalImages = new ArrayList<>();
+    public enum GoodsStatus {
+        @Schema(description = "Product is active and available for purchase", example = "ACTIVE")
+        ACTIVE,
+        @Schema(description = "Product is inactive and not available", example = "INACTIVE")
+        INACTIVE,
+        @Schema(description = "Product is archived and no longer sold", example = "ARCHIVED")
+        ARCHIVED
+    }
+
+    public enum DiscountStatus {
+        @Schema(description = "No discount applied", example = "NONE")
+        NONE,
+        @Schema(description = "Discount is active", example = "ACTIVE")
+        ACTIVE,
+        @Schema(description = "Discount has expired", example = "EXPIRED")
+        EXPIRED
+    }
 }

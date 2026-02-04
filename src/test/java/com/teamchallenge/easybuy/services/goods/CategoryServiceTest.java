@@ -170,7 +170,7 @@ class CategoryServiceTest {
         updatedDTO.setId(categoryId);
         updatedDTO.setName("Updated Electronics");
         updatedDTO.setParentId(parentId); // Simulate updating parent
-        updatedDTO.setSubcategoryIds(Arrays.asList(UUID.randomUUID())); // Simulate updating subcategories
+        updatedDTO.setSubcategoryIds(List.of(UUID.randomUUID())); // Simulate updating subcategories
         updatedDTO.setAttributes(new ArrayList<>()); // Simulate updating attributes
 
         Category updatedCategoryEntity = new Category();

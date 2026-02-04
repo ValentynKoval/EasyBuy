@@ -2,6 +2,7 @@ package com.teamchallenge.easybuy.controllers.goods.category;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamchallenge.easybuy.dto.goods.category.CategoryDTO;
+import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 import com.teamchallenge.easybuy.exceptions.goods.CategoryNotFoundException;
 import com.teamchallenge.easybuy.services.goods.category.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +22,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryControllerTest {
@@ -37,8 +38,8 @@ class CategoryControllerTest {
 
     private ObjectMapper objectMapper;
 
-    private UUID id = UUID.randomUUID();
-    private UUID parentId = UUID.randomUUID();
+    private final UUID id = UUID.randomUUID();
+    private final UUID parentId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {

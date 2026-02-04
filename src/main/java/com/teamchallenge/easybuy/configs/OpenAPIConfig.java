@@ -12,4 +12,5 @@ import org.springframework.context.annotation.Configuration;
                 description = "Documentation of REST endpoints"
         )
 )
-public class OpenAPIConfig { }
+public class OpenAPIConfig {
+}

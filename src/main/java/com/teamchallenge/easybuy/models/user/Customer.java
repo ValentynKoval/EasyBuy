@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 @Data
 @Entity
-public class Customer extends User{
+public class Customer extends User {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "address_id")
     private Address address;

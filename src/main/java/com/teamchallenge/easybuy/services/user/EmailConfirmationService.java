@@ -72,9 +72,9 @@ public class EmailConfirmationService {
     public AuthResponseDto confirmEmail(String token) {
         EmailConfirmationToken emailConfirmationToken = emailConfirmationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalStateException("Invalid token"));
-        if(emailConfirmationToken.isConfirmed())
+        if (emailConfirmationToken.isConfirmed())
             throw new IllegalStateException("Email already confirmed");
-        if(emailConfirmationToken.getExpiresAt().isBefore(LocalDateTime.now()))
+        if (emailConfirmationToken.getExpiresAt().isBefore(LocalDateTime.now()))
             throw new IllegalStateException("Token expired");
 
         emailConfirmationToken.setConfirmed(true);
