@@ -14,7 +14,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "shop_billing_info", indexes = {
         @Index(name = "idx_billing_info_shop_id", columnList = "shop_id"),
-        @Index(name = "idx_billing_info_paypal_client_id", columnList = "paypal_client_id"),
         @Index(name = "idx_billing_info_status", columnList = "billing_status")
 })
 @Getter
@@ -22,6 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"paypalClientSecret"})
 @Schema(description = "Contains billing and payment gateway information for a shop integration with PayPal.")
 public class ShopBillingInfo {
 
@@ -40,17 +40,15 @@ public class ShopBillingInfo {
 
     // PayPal Configuration
     @Convert(converter = CryptoStringConverter.class)
-    @NotBlank(message = "PayPal client ID is required")
     @Size(max = 255, message = "Client ID must not exceed 255 characters")
     @Column(name = "paypal_client_id", length = 255, unique = true)
     @Schema(description = "PayPal application client identifier", example = "AR_YOUR_CLIENT_ID_EXAMPLE", requiredMode = Schema.RequiredMode.REQUIRED)
     private String paypalClientId;
 
     @Convert(converter = CryptoStringConverter.class)
-    @NotBlank(message = "PayPal client secret is required")
+    @ToString.Exclude
     @Size(max = 255, message = "Client secret must not exceed 255 characters")
     @Column(name = "paypal_client_secret", length = 255)
-    // У реальних системах цей секрет має бути зашифрований або зберігатися в безпечному сховищі!
     @Schema(description = "PayPal application client secret (should be securely stored)", example = "EH_YOUR_CLIENT_SECRET_EXAMPLE", requiredMode = Schema.RequiredMode.REQUIRED)
     private String paypalClientSecret;
 
@@ -63,6 +61,14 @@ public class ShopBillingInfo {
     @Column(name = "paypal_webhook_id", length = 255)
     @Schema(description = "PayPal webhook identifier for receiving payment notifications", example = "YOUR_WEBHOOK_ID_EXAMPLE")
     private String paypalWebhookId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "billing_status")
+    private BillingStatus billingStatus;
+
+    public enum BillingStatus {
+        ACTIVE, INACTIVE, PENDING
+    }
 
     // PayPal API URLs (for production and sandbox)
     @NotBlank(message = "PayPal API base URL is required")
