@@ -1,6 +1,7 @@
 package com.teamchallenge.easybuy.repository.shop;
 
 import com.teamchallenge.easybuy.domain.model.goods.Goods;
+import com.teamchallenge.easybuy.domain.model.goods.category.Category;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -78,4 +79,15 @@ public final class ShopSpecifications {
             return cb.equal(goodsJoin.get("category").get("id"), categoryId);
         };
     }
-}
+
+    public static Specification<Shop> hasGoodsInSubcategory(UUID subcategoryId) {
+        return (root, query, cb) -> {
+            if (subcategoryId == null) {
+                return cb.conjunction(); // Если ID не указан, игнорируем фильтр
+            }
+            Join<Shop, Goods> goodsJoin = root.join("goods", JoinType.LEFT);
+            Join<Goods, Category> categoryJoin = goodsJoin.join("category", JoinType.LEFT);
+            return cb.equal(categoryJoin.get("id"), subcategoryId);
+        };
+    }
+    }

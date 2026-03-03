@@ -55,4 +55,8 @@ public class ShopSearchParams {
 
     @Schema(description = "Universal search term for name and description combined", example = "premium")
     private String keyword;
+
+    @Schema(description = "ID подкатегории для фильтрации магазинов по товарам в этой подкатегории", example = "d97bb4bc-9f40-4d5f-b68d-4e537e19e8b2")
+    private UUID subcategoryId;
+
 }
