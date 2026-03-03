@@ -1,8 +1,8 @@
 package com.teamchallenge.easybuy.controllers.goods;
 
 import com.teamchallenge.easybuy.dto.goods.GoodsDTO;
-import com.teamchallenge.easybuy.models.goods.Goods;
-import com.teamchallenge.easybuy.models.goods.category.Category;
+import com.teamchallenge.easybuy.domain.model.goods.Goods;
+import com.teamchallenge.easybuy.domain.model.goods.category.Category;
 import com.teamchallenge.easybuy.services.goods.GoodsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

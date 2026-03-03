@@ -1,6 +1,6 @@
 package com.teamchallenge.easybuy.dto.shop;
 
-import com.teamchallenge.easybuy.models.shop.Shop;
+import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;

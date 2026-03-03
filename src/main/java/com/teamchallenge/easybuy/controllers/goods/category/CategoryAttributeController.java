@@ -1,7 +1,7 @@
 package com.teamchallenge.easybuy.controllers.goods.category;
 
 import com.teamchallenge.easybuy.dto.goods.category.CategoryAttributeDTO;
-import com.teamchallenge.easybuy.models.goods.category.AttributeType;
+import com.teamchallenge.easybuy.domain.model.goods.category.AttributeType;
 import com.teamchallenge.easybuy.services.goods.category.CategoryAttributeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

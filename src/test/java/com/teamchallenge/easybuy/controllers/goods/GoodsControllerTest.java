@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamchallenge.easybuy.dto.goods.GoodsDTO;
 import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 import com.teamchallenge.easybuy.exceptions.goods.GoodsNotFoundException;
-import com.teamchallenge.easybuy.models.goods.Goods;
+import com.teamchallenge.easybuy.domain.model.goods.Goods;
 import com.teamchallenge.easybuy.services.goods.GoodsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

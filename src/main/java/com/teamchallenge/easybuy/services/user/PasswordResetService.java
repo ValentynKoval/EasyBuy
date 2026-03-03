@@ -1,9 +1,9 @@
 package com.teamchallenge.easybuy.services.user;
 
-import com.teamchallenge.easybuy.models.user.PasswordResetToken;
-import com.teamchallenge.easybuy.models.user.User;
-import com.teamchallenge.easybuy.repo.user.PasswordResetTokenRepository;
-import com.teamchallenge.easybuy.repo.user.UserRepository;
+import com.teamchallenge.easybuy.domain.model.user.PasswordResetToken;
+import com.teamchallenge.easybuy.domain.model.user.User;
+import com.teamchallenge.easybuy.repository.user.PasswordResetTokenRepository;
+import com.teamchallenge.easybuy.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamchallenge.easybuy.dto.goods.category.CategoryAttributeDTO;
 import com.teamchallenge.easybuy.exceptions.GlobalExceptionHandler;
 import com.teamchallenge.easybuy.exceptions.goods.CategoryAttributeException;
-import com.teamchallenge.easybuy.models.goods.category.AttributeType;
+import com.teamchallenge.easybuy.domain.model.goods.category.AttributeType;
 import com.teamchallenge.easybuy.services.goods.category.CategoryAttributeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

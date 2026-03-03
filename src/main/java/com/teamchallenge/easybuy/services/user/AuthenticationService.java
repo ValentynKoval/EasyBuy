@@ -1,11 +1,11 @@
 package com.teamchallenge.easybuy.services.user;
 
+import com.teamchallenge.easybuy.domain.model.user.*;
 import com.teamchallenge.easybuy.dto.user.AuthResponseDto;
 import com.teamchallenge.easybuy.dto.user.ChangePasswordDto;
 import com.teamchallenge.easybuy.dto.user.LoginRequestDto;
 import com.teamchallenge.easybuy.dto.user.RegisterRequestDto;
-import com.teamchallenge.easybuy.models.user.*;
-import com.teamchallenge.easybuy.repo.user.UserRepository;
+import com.teamchallenge.easybuy.repository.user.UserRepository;
 import com.teamchallenge.easybuy.services.goods.image.CloudinaryImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,10 +1,10 @@
 package com.teamchallenge.easybuy.services.user;
 
 import com.teamchallenge.easybuy.dto.user.AuthResponseDto;
-import com.teamchallenge.easybuy.models.user.EmailConfirmationToken;
-import com.teamchallenge.easybuy.models.user.User;
-import com.teamchallenge.easybuy.repo.user.EmailConfirmationTokenRepository;
-import com.teamchallenge.easybuy.repo.user.UserRepository;
+import com.teamchallenge.easybuy.domain.model.user.EmailConfirmationToken;
+import com.teamchallenge.easybuy.domain.model.user.User;
+import com.teamchallenge.easybuy.repository.user.EmailConfirmationTokenRepository;
+import com.teamchallenge.easybuy.repository.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

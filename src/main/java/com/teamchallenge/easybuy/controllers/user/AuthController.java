@@ -1,7 +1,7 @@
 package com.teamchallenge.easybuy.controllers.user;
 
 import com.teamchallenge.easybuy.dto.user.*;
-import com.teamchallenge.easybuy.models.user.User;
+import com.teamchallenge.easybuy.domain.model.user.User;
 import com.teamchallenge.easybuy.services.goods.image.CloudinaryImageService;
 import com.teamchallenge.easybuy.services.user.AuthenticationService;
 import com.teamchallenge.easybuy.services.user.EmailConfirmationService;

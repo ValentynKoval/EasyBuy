@@ -1,7 +1,7 @@
 package com.teamchallenge.easybuy.mapper.goods.category;
 
 import com.teamchallenge.easybuy.dto.goods.category.CategoryDTO;
-import com.teamchallenge.easybuy.models.goods.category.Category;
+import com.teamchallenge.easybuy.domain.model.goods.category.Category;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;

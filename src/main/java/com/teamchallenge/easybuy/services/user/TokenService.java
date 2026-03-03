@@ -1,8 +1,8 @@
 package com.teamchallenge.easybuy.services.user;
 
-import com.teamchallenge.easybuy.models.user.Token;
-import com.teamchallenge.easybuy.models.user.User;
-import com.teamchallenge.easybuy.repo.user.TokenRepository;
+import com.teamchallenge.easybuy.domain.model.user.Token;
+import com.teamchallenge.easybuy.domain.model.user.User;
+import com.teamchallenge.easybuy.repository.user.TokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

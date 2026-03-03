@@ -1,7 +1,7 @@
 package com.teamchallenge.easybuy.mapper;
 
 import com.teamchallenge.easybuy.dto.AddressDto;
-import com.teamchallenge.easybuy.models.Address;
+import com.teamchallenge.easybuy.domain.model.Address;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

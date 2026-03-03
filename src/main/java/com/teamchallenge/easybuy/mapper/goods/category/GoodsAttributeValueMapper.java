@@ -1,7 +1,7 @@
 package com.teamchallenge.easybuy.mapper.goods.category;
 
 import com.teamchallenge.easybuy.dto.goods.category.GoodsAttributeValueDTO;
-import com.teamchallenge.easybuy.models.goods.category.GoodsAttributeValue;
+import com.teamchallenge.easybuy.domain.model.goods.category.GoodsAttributeValue;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
