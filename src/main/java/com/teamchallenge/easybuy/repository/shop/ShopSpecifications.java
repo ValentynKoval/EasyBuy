@@ -1,6 +1,9 @@
 package com.teamchallenge.easybuy.repository.shop;
 
+import com.teamchallenge.easybuy.domain.model.goods.Goods;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.UUID;
@@ -58,6 +61,21 @@ public final class ShopSpecifications {
                     cb.like(cb.lower(root.get("shopName")), pattern),
                     cb.like(cb.lower(root.get("shopDescription")), pattern)
             );
+        };
+    }
+
+    /**
+     * Filters shops that have at least one good in the specified category.
+     * @param categoryId The UUID of the category; ignored if null.
+     */
+    public static Specification<Shop> hasCategory(UUID categoryId) {
+        return (root, query, cb) -> {
+            if (categoryId == null) return null;
+
+            Join<Shop, Goods> goodsJoin = root.join("goods", JoinType.LEFT);
+            query.distinct(true);
+
+            return cb.equal(goodsJoin.get("category").get("id"), categoryId);
         };
     }
 }
