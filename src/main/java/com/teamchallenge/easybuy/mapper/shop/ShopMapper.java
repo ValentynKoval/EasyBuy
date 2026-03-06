@@ -12,7 +12,7 @@ public interface ShopMapper {
     ShopDTO toDto(Shop shop);
 
     // IMPORTANT:
-    // Relationships are set manually in service layer
+    // todo: Relationships are set manually in service layer
     Shop toEntity(ShopDTO shopDTO);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
