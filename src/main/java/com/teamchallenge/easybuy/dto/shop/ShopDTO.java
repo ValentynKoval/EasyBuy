@@ -50,7 +50,7 @@ public class ShopDTO {
             description = "Flag: Display store as preferred/favorite.",
             example = "false"
     )
-    private boolean isFeatured = false;
+    private Boolean isFeatured = false;
 
     @NotNull
     @Schema(
@@ -169,6 +169,7 @@ public class ShopDTO {
             accessMode = Schema.AccessMode.READ_ONLY
     )
     private Instant updatedAt;
+
 
     public enum ShopStatus {
         ACTIVE,
