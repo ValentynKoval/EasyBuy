@@ -108,6 +108,9 @@ public class Shop extends BaseEntity {
     @Schema(description = "Type of store, e.g. Sale, Manufacturer, Reseller", example = "Producer")
     private ShopType shopType;
 
+    @Column(name = "slug", unique = true)
+    private String slug;
+
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     @Schema(description = "Reason for rejection of the store", example = "Store is not suitable for selling goods")
     private String rejectionReason;
