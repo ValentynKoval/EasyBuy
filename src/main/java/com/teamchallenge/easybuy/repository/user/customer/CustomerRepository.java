@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.repository.user;
+package com.teamchallenge.easybuy.repository.user.customer;
 
 import com.teamchallenge.easybuy.domain.model.user.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;

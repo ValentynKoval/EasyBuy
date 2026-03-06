@@ -15,12 +15,12 @@ public class CustomerProfileDto {
     @Schema(description = "User avatar url", example = "https://example.com/images/product123_2.jpg")
     private String avatarUrl;
 
-    @Schema(description = "Customer name", example = "Ivanov Ivan")
+    @Schema(description = "customer name", example = "Ivanov Ivan")
     private String name;
 
     @Past(message = "The date of birth must be in the past")
     @NotNull(message = "Date of birth is required")
-    @Schema(description = "Customer's birthday", example = "2000-10-31")
+    @Schema(description = "customer's birthday", example = "2000-10-31")
     private LocalDate birthday;
 
     @NotBlank(message = "Phone number cannot be empty")

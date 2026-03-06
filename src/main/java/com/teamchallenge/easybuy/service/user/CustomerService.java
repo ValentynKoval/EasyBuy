@@ -7,7 +7,7 @@ import com.teamchallenge.easybuy.mapper.AddressMapper;
 import com.teamchallenge.easybuy.mapper.CustomerMapper;
 import com.teamchallenge.easybuy.domain.model.Address;
 import com.teamchallenge.easybuy.domain.model.user.Customer;
-import com.teamchallenge.easybuy.repository.user.CustomerRepository;
+import com.teamchallenge.easybuy.repository.user.customer.CustomerRepository;
 import com.teamchallenge.easybuy.service.goods.image.CloudinaryImageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -88,7 +88,7 @@ public class CustomerService {
 
         return customerRepository.findByEmail(username)
                 .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found: " + username));
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "customer not found: " + username));
     }
 
 }
