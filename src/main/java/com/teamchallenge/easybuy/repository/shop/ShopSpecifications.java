@@ -21,6 +21,7 @@ public final class ShopSpecifications {
     /**
      * Filters shops based on their operational status.
      * * @param status the status to filter by (e.g., ACTIVE, INACTIVE)
+     *
      * @return a specification that matches the given status, or a conjunction if status is null.
      */
     public static Specification<Shop> hasStatus(Shop.ShopStatus status) {
@@ -31,6 +32,7 @@ public final class ShopSpecifications {
     /**
      * Filters shops based on whether they are featured/recommended.
      * * @param featured true to find featured shops, false otherwise.
+     *
      * @return a specification for the featured flag.
      */
     public static Specification<Shop> isFeatured(Boolean featured) {
@@ -41,6 +43,7 @@ public final class ShopSpecifications {
     /**
      * Filters shops belonging to a specific seller.
      * * @param sellerId the unique identifier of the shop owner.
+     *
      * @return a specification that joins the 'seller' attribute and matches the ID.
      */
     public static Specification<Shop> hasSellerId(UUID sellerId) {
@@ -53,6 +56,7 @@ public final class ShopSpecifications {
     /**
      * Performs a global case-insensitive search across shop names and descriptions.
      * * @param keyword the search term.
+     *
      * @return a specification that checks if the keyword is contained in name or description.
      */
     public static Specification<Shop> textSearch(String keyword) {
@@ -70,6 +74,7 @@ public final class ShopSpecifications {
     /**
      * Filters shops by name using a partial match (LIKE).
      * * @param name the name or fragment of the name to search for.
+     *
      * @return a specification for partial name matching.
      */
     public static Specification<Shop> likeName(String name) {
@@ -89,6 +94,7 @@ public final class ShopSpecifications {
      * <li>Matches the provided UUID against the category ID within the goods.</li>
      * </ul>
      * * @param categoryId the unique identifier of the category.
+     *
      * @return a specification filtering shops by product category.
      */
     public static Specification<Shop> hasCategory(UUID categoryId) {
@@ -107,7 +113,14 @@ public final class ShopSpecifications {
         };
     }
 
-    public static Specification<Shop> likeNameOrDescription(String keyword) {
+
+    /**
+     * Filters shops where the name or description contains the given keyword (case-insensitive partial match).
+     *
+     * @param keyword the keyword to search for in name or description.
+     * @return a specification for matching shops by name or description content.
+     */
+    public static Specification<Shop> filterByNameOrDescriptionContaining(String keyword) {
         return (root, query, cb) -> {
             if (keyword == null || keyword.isBlank()) {
                 return cb.conjunction(); // Always returns a true condition if there is no search.

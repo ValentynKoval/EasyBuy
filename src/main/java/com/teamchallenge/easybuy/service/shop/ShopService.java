@@ -138,7 +138,7 @@ public class ShopService {
         }
 
         if (params.getKeyword() != null && !params.getKeyword().isBlank()) {
-            spec = spec.and(ShopSpecifications.likeNameOrDescription(params.getKeyword()));
+            spec = spec.and(ShopSpecifications.filterByNameOrDescriptionContaining(params.getKeyword()));
         }
 
         return shopRepository.findAll(spec, pageable)
