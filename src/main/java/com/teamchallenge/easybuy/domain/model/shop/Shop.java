@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Getter
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "shops", indexes = {
         @Index(name = "idx_shops_slug", columnList = "slug"),
@@ -30,7 +32,6 @@ import java.util.UUID;
         @Index(name = "idx_shop_shopId", columnList = "shop_id"),
         @Index(name = "idx_shop_name", columnList = "shop_name")
 })
-@Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
