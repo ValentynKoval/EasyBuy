@@ -3,7 +3,10 @@ package com.teamchallenge.easybuy.dto.shop;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -17,7 +20,7 @@ import java.util.UUID;
 public class ShopDTO {
 
     @Schema(description = "Unique identifier for the shop. Read only", example = "e3b0c442-98fc-4629-8b9c-a5de62ed1df1"
-    , accessMode = Schema.AccessMode.READ_ONLY)
+            , accessMode = Schema.AccessMode.READ_ONLY)
     private UUID shopId;
 
     @NotBlank
@@ -52,6 +55,7 @@ public class ShopDTO {
     )
     private Boolean isFeatured = false;
 
+
     @NotNull
     @Schema(
             description = "Seller ID. In the DTO, we use only the ID, without the entity reference.",
@@ -64,7 +68,7 @@ public class ShopDTO {
     @DecimalMax(value = "1.0000")
     @Schema(
             description = "Commission rate taken by marketplace (e.g., 0.05 for 5%). " +
-            "The commission cannot be negative or greater than 1 (100%) ",
+                    "The commission cannot be negative or greater than 1 (100%) ",
             example = "0.05")
     private BigDecimal commissionRate;
 
@@ -82,7 +86,7 @@ public class ShopDTO {
             example = "false",
             accessMode = Schema.AccessMode.READ_ONLY
     )
-    private boolean isVerified;
+    private Boolean isVerified;
 
 
     @Schema(
@@ -91,6 +95,11 @@ public class ShopDTO {
     )
     private Shop.ShopType shopType;
 
+    @Schema(description = "Public link to the shop's logo image")
+    private String shopLogoUrl;
+
+    @Schema(description = "URL-friendly identifier for the shop", example = "coffee-world-kyiv")
+    private String slug;
 
     @Schema(
             description = "Reason for rejection of the store",
@@ -118,25 +127,27 @@ public class ShopDTO {
     )
     private UUID moderatedByUserId;
 
+    @Schema(description = "Advanced SEO settings for search engine adaptation")
+    private ShopSeoSettingsDTO seoSettings;
 
-@NotBlank
-@Size(max = 5)
-@Schema(
-        description = "ISO 4217 currency code",
-        example = "UAH",
-        requiredMode = Schema.RequiredMode.REQUIRED,
-        maxLength = 5
-)
+    @NotBlank
+    @Size(max = 5)
+    @Schema(
+            description = "ISO 4217 currency code",
+            example = "UAH",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            maxLength = 5
+    )
     private String currency;
 
-@NotBlank
-@Size(max = 50)
-@Schema(
-        description = "Shop time zone (IANA).",
-        example = "Europe/Kyiv",
-        requiredMode = Schema.RequiredMode.REQUIRED,
-        maxLength = 50
-)
+    @NotBlank
+    @Size(max = 50)
+    @Schema(
+            description = "Shop time zone (IANA).",
+            example = "Europe/Kyiv",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            maxLength = 50
+    )
     private String language;
 
     @NotBlank
