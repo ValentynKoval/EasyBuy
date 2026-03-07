@@ -3,36 +3,28 @@ package com.teamchallenge.easybuy.service.shop;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.dto.shop.ShopDTO;
 import com.teamchallenge.easybuy.dto.shop.ShopSearchParams;
-import com.teamchallenge.easybuy.exception.DuplicateResourceException;
-import com.teamchallenge.easybuy.exception.ResourceNotFoundException;
+import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
 import com.teamchallenge.easybuy.mapper.shop.ShopMapper;
 import com.teamchallenge.easybuy.repository.shop.ShopRepository;
-import com.teamchallenge.easybuy.repository.shop.ShopSpecifications;
+import com.teamchallenge.easybuy.repository.shop.ShopSearchBuilder;
 import com.teamchallenge.easybuy.repository.user.UserRepository;
 import com.teamchallenge.easybuy.repository.user.seller.SellerRepository;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 /**
- * Service layer responsible for managing {@link Shop} entities.
- *
- * <p>This service provides:
- * <ul>
- *     <li>CRUD operations for shops</li>
- *     <li>Search and filtering using JPA Specifications</li>
- *     <li>Validation of unique shop fields</li>
- *     <li>Mapping between entity and DTO</li>
- *     <li>Managing relationships with Seller and Moderator users</li>
- * </ul>
- *
- * <p>The service operates within transactional boundaries and ensures
- * data integrity during create and update operations.</p>
+ * Service layer responsible for managing Shop entities.
  */
 @Service
 @RequiredArgsConstructor
@@ -44,34 +36,30 @@ public class ShopService {
     private final UserRepository userRepository;
 
     /**
-     * Returns paginated list of all shops.
+     * GET ALL SHOPS
      */
     @Transactional(readOnly = true)
     public Page<ShopDTO> getAllShops(Pageable pageable) {
+
         return shopRepository.findAll(pageable)
                 .map(shopMapper::toDto);
     }
 
     /**
-     * Returns shop by its identifier.
-     *
-     * @param id shop identifier
-     * @return shop DTO
-     * @throws ResourceNotFoundException if shop does not exist
+     * GET SHOP BY ID
      */
     @Transactional(readOnly = true)
     public ShopDTO getShopById(UUID id) {
-        return shopRepository.findById(id)
-                .map(shopMapper::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
+
+        Shop shop = shopRepository.findById(id)
+                .orElseThrow(() ->
+                        new ShopNotFoundException("Shop not found with id: " + id));
+
+        return shopMapper.toDto(shop);
     }
 
     /**
-     * Creates a new shop.
-     *
-     * @param shopDTO shop data
-     * @return created shop DTO
-     * @throws DuplicateResourceException if shop name already exists
+     * CREATE SHOP
      */
     @Transactional
     public ShopDTO createShop(ShopDTO shopDTO) {
@@ -82,23 +70,24 @@ public class ShopService {
 
         setShopRelations(shop, shopDTO);
 
-        return shopMapper.toDto(shopRepository.save(shop));
+        try {
+            shop = shopRepository.save(shop);
+        } catch (DataIntegrityViolationException ex) {
+            throw ex;
+        }
+
+        return shopMapper.toDto(shop);
     }
 
     /**
-     * Updates an existing shop.
-     *
-     * <p>Only fields provided in DTO will be updated.</p>
-     *
-     * @param id shop identifier
-     * @param shopDTO updated shop data
-     * @return updated shop DTO
+     * FULL UPDATE
      */
     @Transactional
     public ShopDTO updateShop(UUID id, ShopDTO shopDTO) {
 
         Shop existingShop = shopRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
+                .orElseThrow(() ->
+                        new ShopNotFoundException("Shop not found with id: " + id));
 
         if (shopDTO.getShopName() != null &&
                 !shopDTO.getShopName().equals(existingShop.getShopName())) {
@@ -114,65 +103,134 @@ public class ShopService {
     }
 
     /**
-     * Searches shops using dynamic filtering parameters.
-     *
-     * @param params filtering parameters
-     * @param pageable pagination configuration
-     * @return page of filtered shops
+     * PARTIAL UPDATE (PATCH)
+     */
+    @Transactional
+    public ShopDTO patchShop(UUID id, Map<String, Object> updates) {
+
+        Shop shop = shopRepository.findById(id)
+                .orElseThrow(() ->
+                        new ShopNotFoundException("Shop not found with id: " + id));
+
+        updates.forEach((key, value) -> {
+
+            switch (key) {
+
+                case "shopName" -> {
+                    String newName = value.toString();
+
+                    if (!newName.equals(shop.getShopName())) {
+                        validateShopNameUnique(newName);
+                    }
+
+                    shop.setShopName(newName);
+                }
+
+                case "shopDescription" ->
+                        shop.setShopDescription(value.toString());
+
+                case "isFeatured" ->
+                        shop.setFeatured(Boolean.parseBoolean(value.toString()));
+
+                case "shopStatus" ->
+                        shop.setShopStatus(
+                                Shop.ShopStatus.valueOf(value.toString())
+                        );
+
+                case "slug" ->
+                        shop.setSlug(value.toString());
+
+                case "currency" ->
+                        shop.setCurrency(value.toString());
+
+                case "language" ->
+                        shop.setLanguage(value.toString());
+
+                case "timezone" ->
+                        shop.setTimezone(value.toString());
+
+                case "commissionRate" ->
+                        shop.setCommissionRate(
+                                new BigDecimal(value.toString())
+                        );
+
+                case "shopType" ->
+                        shop.setShopType(
+                                Shop.ShopType.valueOf(value.toString())
+                        );
+
+                default ->
+                        throw new IllegalArgumentException(
+                                "Invalid field for update: " + key
+                        );
+            }
+
+        });
+
+        return shopMapper.toDto(shopRepository.save(shop));
+    }
+
+    /**
+     * DELETE SHOP
+     */
+    @Transactional
+    public void deleteShop(UUID id) {
+
+        Shop shop = shopRepository.findById(id)
+                .orElseThrow(() ->
+                        new ShopNotFoundException("Shop not found with id: " + id));
+
+        shopRepository.delete(shop);
+    }
+
+    /**
+     * SEARCH SHOPS
      */
     @Transactional(readOnly = true)
-    public Page<ShopDTO> searchShops(ShopSearchParams params, Pageable pageable) {
+        public Page<ShopDTO> searchShops(ShopSearchParams params, Pageable pageable) {
 
-        Specification<Shop> spec = Specification.where(null);
+            Specification<Shop> spec = ShopSearchBuilder
+                    .builder()
+                    .withParams(params)
+                    .build();
 
-        if (params.getShopName() != null && !params.getShopName().isBlank()) {
-            spec = spec.and(ShopSpecifications.likeName(params.getShopName()));
+            return shopRepository.findAll(spec, pageable)
+                    .map(shopMapper::toDto);
         }
 
-        if (params.getShopStatus() != null) {
-            spec = spec.and(ShopSpecifications.hasStatus(params.getShopStatus()));
-        }
-
-        if (params.getIsFeatured() != null) {
-            spec = spec.and(ShopSpecifications.isFeatured(params.getIsFeatured()));
-        }
-
-        if (params.getKeyword() != null && !params.getKeyword().isBlank()) {
-            spec = spec.and(ShopSpecifications.filterByNameOrDescriptionContaining(params.getKeyword()));
-        }
-
-        return shopRepository.findAll(spec, pageable)
-                .map(shopMapper::toDto);
-    }
 
     /**
-     * Validates that shop name is unique.
+     * VALIDATE UNIQUE SHOP NAME
      */
     private void validateShopNameUnique(String shopName) {
+
         if (shopRepository.existsByShopName(shopName)) {
-            throw new DuplicateResourceException("Shop name already exists: " + shopName);
+            throw new IllegalArgumentException(
+                    "Shop name already exists: " + shopName
+            );
         }
     }
 
     /**
-     * Sets relational fields for the shop entity.
-     *
-     * <p>This method attaches seller and moderator entities if their IDs
-     * are provided in the DTO.</p>
+     * SET ENTITY RELATIONS
      */
     private void setShopRelations(Shop shop, ShopDTO dto) {
 
         if (dto.getSellerId() != null) {
+
             shop.setSeller(
                     sellerRepository.findById(dto.getSellerId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Seller not found"))
+                            .orElseThrow(() ->
+                                    new IllegalArgumentException("Seller not found"))
             );
         }
 
         if (dto.getModeratedByUserId() != null) {
+
             shop.setModeratedByUser(
                     userRepository.findById(dto.getModeratedByUserId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Moderator not found"))
+                            .orElseThrow(() ->
+                                    new IllegalArgumentException("Moderator not found"))
             );
         }
     }
