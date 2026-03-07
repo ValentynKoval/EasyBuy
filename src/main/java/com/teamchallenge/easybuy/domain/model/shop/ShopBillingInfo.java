@@ -62,14 +62,6 @@ public class ShopBillingInfo {
     @Schema(description = "PayPal webhook identifier for receiving payment notifications", example = "YOUR_WEBHOOK_ID_EXAMPLE")
     private String paypalWebhookId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "billing_status")
-    private BillingStatus billingStatus;
-
-    public enum BillingStatus {
-        ACTIVE, INACTIVE, PENDING
-    }
-
     // PayPal API URLs (for production and sandbox)
     @NotBlank(message = "PayPal API base URL is required")
     @Pattern(regexp = "^(https?://)?[\\w.-]+\\.[a-z]{2,}.*$", message = "Invalid URL format")
