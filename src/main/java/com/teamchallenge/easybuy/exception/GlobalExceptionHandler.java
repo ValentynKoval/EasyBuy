@@ -1,5 +1,6 @@
 package com.teamchallenge.easybuy.exception;
 
+import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
 import com.teamchallenge.easybuy.exception.goods.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -131,5 +132,13 @@ public class GlobalExceptionHandler {
         response.put("message", message);
         response.put("path", request.getDescription(false).replace("uri=", ""));
         return new ResponseEntity<>(response, status);
+    }
+
+    @ExceptionHandler(ShopNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleShopNotFoundException(
+            ShopNotFoundException ex,
+            WebRequest request) {
+
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request);
     }
 }
