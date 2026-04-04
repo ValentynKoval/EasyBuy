@@ -6,7 +6,9 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.retry.annotation.EnableRetry;
 
+@EnableRetry
 @EnableCaching
 @EnableJpaAuditing
 @EnableJpaRepositories(basePackages = "com.teamchallenge.easybuy")
