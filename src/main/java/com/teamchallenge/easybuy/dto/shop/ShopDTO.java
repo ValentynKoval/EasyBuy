@@ -1,6 +1,7 @@
 package com.teamchallenge.easybuy.dto.shop;
 
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
+import com.teamchallenge.easybuy.dto.shop.shopcontact.ShopContactInfoDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -16,184 +17,161 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Data Transfer Object for Goods entity, used in API responses and requests.")
+@Schema(description = "Data Transfer Object for Shop entity, used in API responses and requests.")
 public class ShopDTO {
 
-    @Schema(description = "Unique identifier for the shop. Read only", example = "e3b0c442-98fc-4629-8b9c-a5de62ed1df1"
-            , accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "Unique identifier for the shop. Read-only.",
+            example = "e3b0c442-98fc-4629-8b9c-a5de62ed1df1",
+            accessMode = Schema.AccessMode.READ_ONLY)
     private UUID shopId;
 
     @NotBlank
     @Size(min = 1, max = 100)
-    @Schema(
-            description = "Name of the shop. Max Length = 100.",
+    @Schema(description = "Name of the shop. Maximum 100 characters.",
             example = "MyStore",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            maxLength = 100, minLength = 1)
+            minLength = 1,
+            maxLength = 100)
     private String shopName;
 
     @NotBlank
     @Size(max = 1000)
-    @Schema(
-            description = "Store description (up to 1000 characters).",
-            example = "Leading seller of Shoe and Dress.",
+    @Schema(description = "Description of the shop. Maximum 1000 characters.",
+            example = "Leading seller of shoes and dresses.",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            maxLength = 1000
-    )
+            maxLength = 1000)
     private String shopDescription;
 
     @NotNull
-    @Schema(
-            description = "Status of the shop",
+    @Schema(description = "Status of the shop.",
             example = "ACTIVE",
             requiredMode = Schema.RequiredMode.REQUIRED)
     private Shop.ShopStatus shopStatus;
 
-    @Schema(
-            description = "Flag: Display store as preferred/favorite.",
-            example = "false"
-    )
-    private Boolean isFeatured = false;
-
+    @Schema(description = "Flag indicating if the shop is featured or recommended.",
+            example = "false")
+    private boolean featured = false;
 
     @NotNull
-    @Schema(
-            description = "Seller ID. In the DTO, we use only the ID, without the entity reference.",
+    @Schema(description = "ID of the shop's seller (owner).",
             example = "123e4567-e89b-12d3-a456-426614174000",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private UUID sellerId;
 
-    @DecimalMin(value = "0.0000")
-    @DecimalMax(value = "1.0000")
-    @Schema(
-            description = "Commission rate taken by marketplace (e.g., 0.05 for 5%). " +
-                    "The commission cannot be negative or greater than 1 (100%) ",
+    @DecimalMin("0.0000")
+    @DecimalMax("1.0000")
+    @Schema(description = "Commission rate taken by the marketplace (0 to 1).",
             example = "0.05")
     private BigDecimal commissionRate;
 
-
-    @Schema(
-            description = "The store's peak activity time. Typically set by the server.",
+    @Schema(description = "Timestamp of the last activity in the shop (read-only).",
             example = "2025-05-28T11:21:00Z",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
+            accessMode = Schema.AccessMode.READ_ONLY)
     private Instant lastActivityAt;
 
-
-    @Schema(
-            description = "Flag: The store is verified. Usually set by the server.",
+    @Schema(description = "Flag indicating if the shop is verified (read-only).",
             example = "false",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
-    private Boolean isVerified;
+            accessMode = Schema.AccessMode.READ_ONLY)
+    private boolean verified = false;
 
-
-    @Schema(
-            description = "Type of store, e.g. Sale, Manufacturer, Reseller",
-            example = "Producer"
-    )
+    @Schema(description = "Type of shop, e.g., Retailer, Producer, Reseller.",
+            example = "PRODUCER")
     private Shop.ShopType shopType;
 
-    @Schema(description = "Public link to the shop's logo image")
+    @Schema(description = "Public URL to the shop's logo image.",
+            example = "https://shop.com/logo.png")
     private String shopLogoUrl;
 
-    @Schema(description = "URL-friendly identifier for the shop", example = "coffee-world-kyiv")
+    @Schema(description = "URL-friendly identifier (slug) of the shop.",
+            example = "coffee-world-kyiv")
     private String slug;
 
-    @Schema(
-            description = "Reason for rejection of the store",
+    @Schema(description = "Reason why the shop was rejected, if applicable.",
             example = "Store is not suitable for selling goods")
     private String rejectionReason;
 
-    @Schema(
-            description = "Internal notes from admins/moderators regarding the store. Not visible to customers.",
+    @Schema(description = "Internal moderator notes. Not visible to customers.",
             example = "Re-verification required in 3 months.",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
+            accessMode = Schema.AccessMode.READ_ONLY)
     private String moderatorNotes;
 
-    @Schema(
-            description = "When the store was last moderated. Read-only.",
+    @Schema(description = "Timestamp of the last moderation (read-only).",
             example = "2025-05-28T11:21:00Z",
             accessMode = Schema.AccessMode.READ_ONLY)
     private Instant lastModeratedAt;
 
-
-    @Schema(
-            description = "The ID of the user (admin) who moderated the store. Read-only.",
+    @Schema(description = "ID of the user (admin) who last moderated the shop (read-only).",
             example = "00000000-0000-0000-0000-000000000000",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
+            accessMode = Schema.AccessMode.READ_ONLY)
     private UUID moderatedByUserId;
 
-    @Schema(description = "Advanced SEO settings for search engine adaptation")
+    @Schema(description = "SEO settings for the shop.")
     private ShopSeoSettingsDTO seoSettings;
 
     @NotBlank
     @Size(max = 5)
-    @Schema(
-            description = "ISO 4217 currency code",
+    @Schema(description = "Currency code (ISO 4217).",
             example = "UAH",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            maxLength = 5
-    )
+            maxLength = 5)
     private String currency;
 
     @NotBlank
-    @Size(max = 50)
-    @Schema(
-            description = "Shop time zone (IANA).",
-            example = "Europe/Kyiv",
+    @Size(max = 5)
+    @Schema(description = "Primary language of the shop (ISO 639-1).",
+            example = "uk",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            maxLength = 50
-    )
+            maxLength = 5)
     private String language;
 
     @NotBlank
     @Size(max = 50)
-    @Schema(
-            description = "Store Time Zone (IANA)).",
+    @Schema(description = "Timezone of the shop (IANA format).",
             example = "Europe/Kyiv",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            maxLength = 50
-    )
+            maxLength = 50)
     private String timezone;
 
-    @Schema(
-            description = "Optimistic locking version (used by the server).",
+    @Schema(description = "Optimistic lock version (read-only).",
             example = "0",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
+            accessMode = Schema.AccessMode.READ_ONLY)
     private long version;
 
-    @Schema(
-            description = "When the store is created (audit).",
+    @Schema(description = "Timestamp when the shop was created (read-only).",
             example = "2025-05-28T11:21:00Z",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
+            accessMode = Schema.AccessMode.READ_ONLY)
     private Instant createdAt;
 
-    @Schema(
-            description = "When the store is updated (audit).",
+    @Schema(description = "Timestamp when the shop was last updated (read-only).",
             example = "2025-05-28T11:21:00Z",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
+            accessMode = Schema.AccessMode.READ_ONLY)
     private Instant updatedAt;
 
+    @Schema(description = "Contact information of the shop.",
+            implementation = ShopContactInfoDTO.class)
+    private ShopContactInfoDTO shopContactInfo;
 
     public enum ShopStatus {
+        @Schema(description = "Store is active and available for buyers")
         ACTIVE,
+        @Schema(description = "Store is inactive and temporarily unavailable")
         INACTIVE,
+        @Schema(description = "Store is awaiting administrator review before activation")
         PENDING,
+        @Schema(description = "Store is blocked due to policy violations")
         BANNED,
+        @Schema(description = "Store is rejected due to policy violations")
         REJECTED
     }
 
     public enum ShopType {
+        @Schema(description = "A store that sells goods to other users")
         RETAILER,
+        @Schema(description = "A store that manufactures goods itself")
         PRODUCER,
+        @Schema(description = "A store that resells goods from other manufacturers")
         RESELLER,
+        @Schema(description = "Another, unclassified type of store")
         OTHER
     }
 
