@@ -4,6 +4,7 @@ import com.teamchallenge.easybuy.domain.model.Address;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @SuperBuilder
 @AllArgsConstructor
 @RequiredArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 public class Customer extends User {
