@@ -30,10 +30,6 @@ public class ShopSearchBuilder {
             spec = spec.and(ShopSpecifications.textSearch(params.getKeyword()));
         }
 
-        if (params.getSubcategoryId() != null) {
-            spec = spec.and(ShopSpecifications.hasGoodsInSubcategory(params.getSubcategoryId()));
-        }
-
         return this;
     }
 
