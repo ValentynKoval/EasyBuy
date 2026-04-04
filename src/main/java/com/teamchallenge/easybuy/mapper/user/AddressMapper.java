@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.mapper;
+package com.teamchallenge.easybuy.mapper.user;
 
 import com.teamchallenge.easybuy.dto.AddressDto;
 import com.teamchallenge.easybuy.domain.model.Address;
