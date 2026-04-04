@@ -123,7 +123,7 @@ public class CloudinaryImageService {
         if (words.length == 1) {
             return words[0].substring(0, Math.min(2, words[0].length())).toUpperCase();
         } else {
-            return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+            return ("" + words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
         }
     }
 
