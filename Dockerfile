@@ -13,3 +13,15 @@ ENV PORT 8080
 EXPOSE ${PORT}
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -jar target/EasyBuy-0.0.1-SNAPSHOT.jar"]
+
+# Используем JDK 17
+FROM openjdk:17-jdk-slim
+
+# Рабочая директория
+WORKDIR /app
+
+# Копируем jar
+COPY target/EasyBuy-0.0.1-SNAPSHOT.jar app.jar
+
+# Запуск приложения
+ENTRYPOINT ["java","-jar","app.jar"]
