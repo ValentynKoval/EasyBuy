@@ -10,9 +10,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -23,7 +20,12 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@EntityListeners(AuditingEntityListener.class)
+@Builder
+@NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
+@AllArgsConstructor
+@ToString(exclude = {"goods", "shopContactInfo", "moderationHistory", "shopManagers", "seoSettings", "seller", "moderatedByUser"})
+@Schema(description = "Base information for a shop.")
 @Table(name = "shops", indexes = {
         @Index(name = "idx_shops_slug", columnList = "slug"),
         @Index(name = "idx_shops_status", columnList = "shop_status"),
@@ -32,12 +34,6 @@ import java.util.UUID;
         @Index(name = "idx_shop_shopId", columnList = "shop_id"),
         @Index(name = "idx_shop_name", columnList = "shop_name")
 })
-@Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@AllArgsConstructor
-@ToString(exclude = {"goods", "shopContactInfo", "moderationHistory", "shopManagers", "seoSettings", "seller", "moderatedByUser"})
-@Schema(description = "Base information for a shop.")
 public class Shop extends BaseEntity {
 
     @Id
@@ -156,10 +152,9 @@ public class Shop extends BaseEntity {
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String timezone = "Europe/Kiev";
 
-    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
-    @Schema(description = "Shop contact information records")
-    private List<ShopContactInfo> shopContactInfo = new ArrayList<>();
+    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Schema(description = "Shop contact information record")
+    private ShopContactInfo shopContactInfo;
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
@@ -175,24 +170,6 @@ public class Shop extends BaseEntity {
     @Schema(description = "List of manager link records for this shop")
     private List<Manager> shopManagers = new ArrayList<>();
 
-    @Version
-    @Column(name = "version", nullable = false)
-    @Schema(description = "Optimistic lock version. Read only.", accessMode = Schema.AccessMode.READ_ONLY)
-    private long version;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Schema(description = "The time the store was created. Set automatically on first save.", example = "2025-05-28T11:21:00Z",
-            accessMode = Schema.AccessMode.READ_ONLY)
-    private Instant createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    @Schema(description = "The time the store was last updated. Set automatically each time the entity is updated.",
-            example = "2025-05-28T11:21:00Z",
-            accessMode = Schema.AccessMode.READ_ONLY)
-    private Instant updatedAt;
-
     // Lifecycle callbacks
 
     public void addGood(Goods good) {
@@ -207,19 +184,7 @@ public class Shop extends BaseEntity {
         good.setShop(null);
     }
 
-    // Helpers to maintain bidirectional consistency
 
-    public void addContactInfo(ShopContactInfo info) {
-        if (info == null) return;
-        this.shopContactInfo.add(info);
-        info.setShop(this);
-    }
-
-    public void removeContactInfo(ShopContactInfo info) {
-        if (info == null) return;
-        this.shopContactInfo.remove(info);
-        info.setShop(null);
-    }
 
     public void addModerationRecord(ShopModerationHistory record) {
         if (record == null) return;
