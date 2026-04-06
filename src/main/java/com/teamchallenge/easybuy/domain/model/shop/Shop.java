@@ -148,9 +148,9 @@ public class Shop extends BaseEntity {
     @Column(name = "timezone", nullable = false, length = 50)
     @Builder.Default
     @Size(max = 50, message = "Timezone must not exceed 50 characters")
-    @Schema(description = "Timezone of the shop (IANA Time Zone Database)", example = "Europe/Kiev",
+    @Schema(description = "Timezone of the shop (IANA Time Zone Database)", example = "Europe/Kyiv",
             requiredMode = Schema.RequiredMode.REQUIRED)
-    private String timezone = "Europe/Kiev";
+    private String timezone = "Europe/Kyiv";
 
     @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Schema(description = "Shop contact information record")
