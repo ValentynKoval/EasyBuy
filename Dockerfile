@@ -1,4 +1,5 @@
-FROM maven:3.9.3-eclipse-temurin-17
+# Multi-stage build
+FROM maven:3.9.3-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
@@ -7,21 +8,16 @@ COPY src ./src
 
 RUN mvn clean package -DskipTests
 
+# Runtime stage
+FROM openjdk:17-jdk-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/target/EasyBuy-0.0.1-SNAPSHOT.jar app.jar
+
 ENV JAVA_OPTS=""
-ENV PORT 8080
+ENV PORT=8080
 
 EXPOSE ${PORT}
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -jar target/EasyBuy-0.0.1-SNAPSHOT.jar"]
-
-# Используем JDK 17
-FROM openjdk:17-jdk-slim
-
-# Рабочая директория
-WORKDIR /app
-
-# Копируем jar
-COPY target/EasyBuy-0.0.1-SNAPSHOT.jar app.jar
-
-# Запуск приложения
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"]
