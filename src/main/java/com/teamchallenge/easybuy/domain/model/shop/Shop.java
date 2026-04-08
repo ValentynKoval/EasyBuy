@@ -78,6 +78,9 @@ public class Shop extends BaseEntity {
             example = "123e4567-e89b-12d3-a456-426614174000", requiredMode = Schema.RequiredMode.REQUIRED)
     private Seller seller;
 
+    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ShopBillingInfo shopBillingInfo;
+
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Schema(description = "List of goods available in your store")
