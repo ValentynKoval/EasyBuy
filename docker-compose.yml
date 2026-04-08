@@ -32,6 +32,23 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: easybuy-app
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      PORT: 8080
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: easybuy-pgadmin
