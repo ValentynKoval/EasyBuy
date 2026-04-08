@@ -1,0 +1,45 @@
+package com.teamchallenge.easybuy.controller.shop.shopbillinginfo;
+
+
+import com.teamchallenge.easybuy.dto.shop.shopbillinginfo.ShopBillingInfoDTO;
+import com.teamchallenge.easybuy.service.shop.shopbillingservice.ShopBillingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+/**
+ * REST controller for managing shop billing information and Stripe Connect onboarding.
+ */
+@RestController
+@RequestMapping("/api/v1/shops/{shopId}/billing")
+@RequiredArgsConstructor
+@Tag(name = "Shop Billing", description = "Endpoints for managing shop Stripe integration and payouts")
+public class ShopBillingController {
+
+    private final ShopBillingService billingService;
+
+    /**
+     * Retrieves the current billing status and configuration for a specific shop.
+     */
+    @GetMapping
+    @Operation(summary = "Get shop billing info",
+            description = "Returns Stripe account status and billing email for the shop")
+    public ResponseEntity<ShopBillingInfoDTO> getBillingInfo(@PathVariable UUID shopId) {
+        return ResponseEntity.ok(billingService.getBillingInfo(shopId));
+    }
+
+    /**
+     * Initiates or resumes the Stripe onboarding process.
+     * Returns a DTO containing a fresh onboardingUrl to redirect the seller.
+     */
+    @PostMapping("/onboarding")
+    @Operation(summary = "Setup Stripe onboarding",
+            description = "Creates a Stripe Connect account if missing and generates a fresh onboarding link")
+    public ResponseEntity<ShopBillingInfoDTO> setupOnboarding(@PathVariable UUID shopId) {
+        return ResponseEntity.ok(billingService.setupStripeOnboarding(shopId));
+    }
+}
