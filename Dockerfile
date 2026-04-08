@@ -17,6 +17,7 @@ COPY --from=builder /app/target/EasyBuy-0.0.1-SNAPSHOT.jar app.jar
 
 ENV JAVA_OPTS=""
 ENV PORT=8080
+ENV SPRING_PROFILES_ACTIVE=docker
 
 EXPOSE ${PORT}
 
