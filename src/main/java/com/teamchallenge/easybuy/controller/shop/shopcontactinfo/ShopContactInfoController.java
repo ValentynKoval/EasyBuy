@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.controller.shopcontactinfo;
+package com.teamchallenge.easybuy.controller.shop.shopcontactinfo;
 
 import com.teamchallenge.easybuy.dto.shop.shopcontact.ShopContactInfoDTO;
 import com.teamchallenge.easybuy.service.shop.shopcontactinfo.ShopContactInfoService;
