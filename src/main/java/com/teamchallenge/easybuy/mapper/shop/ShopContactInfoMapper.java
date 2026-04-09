@@ -13,11 +13,12 @@ public interface ShopContactInfoMapper {
 
     // ===================== TO DTO =====================
 
+    @Mapping(source = "id", target = "contactInfoId")
     ShopContactInfoDTO toDto(ShopContactInfo entity);
 
     // ===================== TO ENTITY =====================
 
-    @Mapping(target = "contactInfoId", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "shop", ignore = true)
     @Mapping(target = "verified", ignore = true)
     @Mapping(target = "verificationDate", ignore = true)
@@ -29,7 +30,7 @@ public interface ShopContactInfoMapper {
     // ===================== UPDATE =====================
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "contactInfoId", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "shop", ignore = true)
     @Mapping(target = "verified", ignore = true)
     @Mapping(target = "verificationDate", ignore = true)
