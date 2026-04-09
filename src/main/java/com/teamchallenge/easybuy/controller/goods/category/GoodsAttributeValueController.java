@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,6 +46,7 @@ public class GoodsAttributeValueController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create a new attribute value", responses = {
             @ApiResponse(responseCode = "201", description = "Successfully created", content = @Content(schema = @Schema(implementation = GoodsAttributeValueDTO.class)))
     })
@@ -53,6 +55,7 @@ public class GoodsAttributeValueController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update an attribute value", responses = {
             @ApiResponse(responseCode = "200", description = "Successfully updated", content = @Content(schema = @Schema(implementation = GoodsAttributeValueDTO.class))),
             @ApiResponse(responseCode = "404", description = "Attribute value not found")
@@ -62,6 +65,7 @@ public class GoodsAttributeValueController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete an attribute value", responses = {
             @ApiResponse(responseCode = "200", description = "Successfully deleted"),
             @ApiResponse(responseCode = "404", description = "Attribute value not found")
