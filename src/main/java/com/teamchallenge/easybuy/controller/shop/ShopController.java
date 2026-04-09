@@ -2,6 +2,9 @@ package com.teamchallenge.easybuy.controller.shop;
 
 import com.teamchallenge.easybuy.dto.shop.ShopDTO;
 import com.teamchallenge.easybuy.dto.shop.ShopSearchParams;
+import com.teamchallenge.easybuy.dto.shop.request.ShopCreateRequestDTO;
+import com.teamchallenge.easybuy.dto.shop.request.ShopPatchRequestDTO;
+import com.teamchallenge.easybuy.dto.shop.request.ShopUpdateRequestDTO;
 import com.teamchallenge.easybuy.service.shop.ShopService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -55,7 +58,9 @@ public class ShopController {
     @PostMapping
     @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<ShopDTO> createShop(
-            @Valid @RequestBody ShopDTO shopDTO) {
+            @Valid @RequestBody ShopCreateRequestDTO request) {
+
+        ShopDTO shopDTO = mapCreateRequestToShopDto(request);
 
         ShopDTO created = shopService.createShop(shopDTO);
 
@@ -71,7 +76,9 @@ public class ShopController {
     @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<ShopDTO> updateShop(
             @PathVariable @NotNull UUID id,
-            @Valid @RequestBody ShopDTO shopDTO) {
+            @Valid @RequestBody ShopUpdateRequestDTO request) {
+
+        ShopDTO shopDTO = mapUpdateRequestToShopDto(request);
 
         return ResponseEntity.ok(shopService.updateShop(id, shopDTO));
     }
@@ -83,9 +90,22 @@ public class ShopController {
     @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<ShopDTO> patchShop(
             @PathVariable @NotNull UUID id,
-            @Valid @RequestBody ShopDTO shopDTO) {
+            @RequestBody ShopPatchRequestDTO request) {
+
+        ShopDTO shopDTO = mapPatchRequestToShopDto(request);
 
         return ResponseEntity.ok(shopService.patchShop(id, shopDTO));
+    }
+
+    @Operation(summary = "Update shop profile in one request",
+            description = "Updates base shop data and nested contact/tax/seo blocks for single-page shop settings UI")
+    @PutMapping("/{id}/profile")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
+    public ResponseEntity<ShopDTO> updateShopProfile(
+            @PathVariable @NotNull UUID id,
+            @RequestBody ShopDTO shopDTO) {
+
+        return ResponseEntity.ok(shopService.updateShopProfile(id, shopDTO));
     }
 
     // ===================== DELETE =====================
@@ -111,5 +131,40 @@ public class ShopController {
             Pageable pageable) {
 
         return ResponseEntity.ok(shopService.searchShops(params, pageable));
+    }
+
+    private ShopDTO mapCreateRequestToShopDto(ShopCreateRequestDTO request) {
+        ShopDTO dto = new ShopDTO();
+        dto.setShopName(request.getShopName());
+        dto.setShopDescription(request.getShopDescription());
+        dto.setSellerId(request.getSellerId());
+        dto.setCurrency(request.getCurrency());
+        dto.setLanguage(request.getLanguage());
+        dto.setTimezone(request.getTimezone());
+        return dto;
+    }
+
+    private ShopDTO mapUpdateRequestToShopDto(ShopUpdateRequestDTO request) {
+        ShopDTO dto = new ShopDTO();
+        dto.setShopName(request.getShopName());
+        dto.setShopDescription(request.getShopDescription());
+        dto.setShopStatus(request.getShopStatus());
+        dto.setSellerId(request.getSellerId());
+        dto.setCurrency(request.getCurrency());
+        dto.setLanguage(request.getLanguage());
+        dto.setTimezone(request.getTimezone());
+        return dto;
+    }
+
+    private ShopDTO mapPatchRequestToShopDto(ShopPatchRequestDTO request) {
+        ShopDTO dto = new ShopDTO();
+        dto.setShopName(request.getShopName());
+        dto.setShopDescription(request.getShopDescription());
+        dto.setShopStatus(request.getShopStatus());
+        dto.setSellerId(request.getSellerId());
+        dto.setCurrency(request.getCurrency());
+        dto.setLanguage(request.getLanguage());
+        dto.setTimezone(request.getTimezone());
+        return dto;
     }
 }
