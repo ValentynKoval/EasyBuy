@@ -3,10 +3,11 @@ package com.teamchallenge.easybuy.service.shop.shoptaxinfo;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.domain.model.shop.ShopTaxInfo;
 import com.teamchallenge.easybuy.dto.shop.shoptaxinfo.ShopTaxInfoDTO;
-import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
+import com.teamchallenge.easybuy.exception.shop.ShopNotFoundException;
 import com.teamchallenge.easybuy.mapper.shop.ShopTaxMapper;
 import com.teamchallenge.easybuy.repository.shop.ShopRepository;
 import com.teamchallenge.easybuy.repository.shop.shoptaxrepository.ShopTaxRepository;
+import com.teamchallenge.easybuy.service.shop.security.ShopAccessGuard;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +29,13 @@ public class ShopTaxService {
     private final ShopTaxRepository taxRepository;
     private final ShopRepository shopRepository;
     private final ShopTaxMapper mapper;
+    private final ShopAccessGuard accessGuard;
 
     // ===================== READ =====================
 
     @Transactional(readOnly = true)
     public ShopTaxInfoDTO getByShopId(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.debug("Fetching tax info for shop: {}", shopId);
 
         return taxRepository.findById(shopId)
@@ -47,6 +50,7 @@ public class ShopTaxService {
             backoff = @Backoff(delay = 500)
     )
     public ShopTaxInfoDTO create(@NotNull UUID shopId, @Valid @NotNull ShopTaxInfoDTO dto) {
+        accessGuard.requireCanManageShop(shopId);
         log.info("Creating tax info for shop: {}", shopId);
 
         Shop shop = findShopOrThrow(shopId);
@@ -68,6 +72,7 @@ public class ShopTaxService {
     // ===================== UPDATE =====================
 
     public ShopTaxInfoDTO update(@NotNull UUID shopId, @Valid @NotNull ShopTaxInfoDTO dto) {
+        accessGuard.requireCanManageShop(shopId);
         log.info("Updating tax info for shop: {}", shopId);
 
         ShopTaxInfo entity = taxRepository.findById(shopId)
@@ -91,6 +96,7 @@ public class ShopTaxService {
     // ===================== DELETE =====================
 
     public void delete(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.info("Deleting tax info for shop: {}", shopId);
 
         if (!taxRepository.existsById(shopId)) {
