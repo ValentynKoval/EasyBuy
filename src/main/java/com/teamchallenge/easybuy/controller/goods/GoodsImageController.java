@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,6 +50,7 @@ public class GoodsImageController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('SELLER','MANAGER','ADMIN')")
     @Operation(summary = "Create a new goods image", responses = {
             @ApiResponse(responseCode = "201", description = "Successfully created",
                     content = @Content(schema = @Schema(implementation = GoodsImageDTO.class)))
@@ -63,6 +65,7 @@ public class GoodsImageController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('SELLER','MANAGER','ADMIN')")
     @Operation(summary = "Update a goods image", responses = {
             @ApiResponse(responseCode = "200", description = "Successfully updated",
                     content = @Content(schema = @Schema(implementation = GoodsImageDTO.class))),
@@ -80,6 +83,7 @@ public class GoodsImageController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SELLER','MANAGER','ADMIN')")
     @Operation(summary = "Delete a goods image", responses = {
             @ApiResponse(responseCode = "200", description = "Successfully deleted"),
             @ApiResponse(responseCode = "404", description = "Image not found")
