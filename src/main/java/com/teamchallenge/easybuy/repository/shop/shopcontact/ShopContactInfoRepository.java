@@ -54,7 +54,7 @@ public interface ShopContactInfoRepository extends JpaRepository<ShopContactInfo
 
     boolean existsByShop_ShopIdAndActiveTrue(UUID shopId);
 
-    boolean existsByContactEmailAndContactInfoIdNot(String email, UUID excludeId);
+    boolean existsByContactEmailAndIdNot(String email, UUID excludeId);
 
     // ===================== ADMIN =====================
 
@@ -73,7 +73,7 @@ public interface ShopContactInfoRepository extends JpaRepository<ShopContactInfo
         SET sci.verified = :verified,
             sci.verificationDate = :verificationDate,
             sci.updatedAt = :now
-        WHERE sci.contactInfoId IN :ids
+        WHERE sci.id IN :ids
     """)
     int updateVerificationStatus(@Param("ids") List<UUID> ids,
                                  @Param("verified") boolean verified,
@@ -85,7 +85,7 @@ public interface ShopContactInfoRepository extends JpaRepository<ShopContactInfo
         UPDATE ShopContactInfo sci
         SET sci.active = false,
             sci.updatedAt = :now
-        WHERE sci.contactInfoId IN :ids
+        WHERE sci.id IN :ids
     """)
     int deactivateContactInfo(@Param("ids") List<UUID> ids,
                               @Param("now") Instant now);
@@ -112,7 +112,7 @@ public interface ShopContactInfoRepository extends JpaRepository<ShopContactInfo
     // ===================== CLEANUP =====================
 
     @Query("""
-        SELECT sci.contactInfoId FROM ShopContactInfo sci
+        SELECT sci.id FROM ShopContactInfo sci
         WHERE sci.active = false AND sci.updatedAt < :beforeDate
     """)
     List<UUID> findInactiveOlderThanForCleanup(@Param("beforeDate") Instant beforeDate);
@@ -145,7 +145,7 @@ public interface ShopContactInfoRepository extends JpaRepository<ShopContactInfo
 
     @Query("""
         SELECT COUNT(sci) > 0 FROM ShopContactInfo sci
-        WHERE sci.contactInfoId = :contactId
+        WHERE sci.id = :contactId
         AND sci.shop.seller.id = :sellerId
     """)
     boolean belongsToSeller(@Param("contactId") UUID contactId,
