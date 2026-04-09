@@ -29,20 +29,19 @@ import static com.teamchallenge.easybuy.util.StringUtils.hasText;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = "shop")
+@ToString
 @Builder
 @Schema(description = "Contains contact information of a shop.")
 public class ShopContactInfo {
 
-    @EqualsAndHashCode.Include
     @Id
-    @GeneratedValue
-    @UuidGenerator
-    @Column(name = "contact_info_id", nullable = false, updatable = false)
-    private UUID contactInfoId;
+    @Column(name = "shop_id")
+    private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shop_id", nullable = false, unique = true)
+    @MapsId
+    @JoinColumn(name = "shop_id")
+    @ToString.Exclude
     private Shop shop;
 
     // --- CONTACT ---
