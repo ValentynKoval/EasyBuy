@@ -3,10 +3,11 @@ package com.teamchallenge.easybuy.service.shop.shopcontactinfo;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.domain.model.shop.ShopContactInfo;
 import com.teamchallenge.easybuy.dto.shop.shopcontact.ShopContactInfoDTO;
-import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
+import com.teamchallenge.easybuy.exception.shop.ShopNotFoundException;
 import com.teamchallenge.easybuy.mapper.shop.ShopContactInfoMapper;
 import com.teamchallenge.easybuy.repository.shop.ShopRepository;
 import com.teamchallenge.easybuy.repository.shop.shopcontact.ShopContactInfoRepository;
+import com.teamchallenge.easybuy.service.shop.security.ShopAccessGuard;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +29,13 @@ public class ShopContactInfoService {
     private final ShopContactInfoRepository contactInfoRepository;
     private final ShopRepository shopRepository;
     private final ShopContactInfoMapper mapper;
+    private final ShopAccessGuard accessGuard;
 
     // ===================== READ =====================
 
     @Transactional(readOnly = true)
     public ShopContactInfoDTO getByShopId(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.debug("Fetching contact info for shop: {}", shopId);
 
         return contactInfoRepository.findByShop_ShopId(shopId)
@@ -43,6 +46,7 @@ public class ShopContactInfoService {
 
     @Transactional(readOnly = true)
     public ShopContactInfoDTO getActiveByShopId(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.debug("Fetching ACTIVE contact info for shop: {}", shopId);
 
         return contactInfoRepository.findActiveByShopId(shopId)
@@ -60,6 +64,8 @@ public class ShopContactInfoService {
     )
     public ShopContactInfoDTO create(@NotNull UUID shopId,
                                      @Valid @NotNull ShopContactInfoDTO dto) {
+
+        accessGuard.requireCanManageShop(shopId);
 
         log.info("Creating contact info for shop: {}", shopId);
 
@@ -82,6 +88,8 @@ public class ShopContactInfoService {
 
     public ShopContactInfoDTO update(@NotNull UUID shopId,
                                      @Valid @NotNull ShopContactInfoDTO dto) {
+
+        accessGuard.requireCanManageShop(shopId);
 
         log.info("Updating contact info for shop: {}", shopId);
 
@@ -110,6 +118,7 @@ public class ShopContactInfoService {
     // ===================== DELETE =====================
 
     public void deactivate(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.info("Deactivating contact info for shop: {}", shopId);
 
         ShopContactInfo entity = contactInfoRepository.findActiveByShopId(shopId)
@@ -126,6 +135,7 @@ public class ShopContactInfoService {
     // ===================== VERIFY =====================
 
     public void verify(@NotNull UUID shopId) {
+        accessGuard.requireAdmin();
         log.info("Verifying contact info for shop: {}", shopId);
 
         ShopContactInfo entity = contactInfoRepository.findByShop_ShopId(shopId)
