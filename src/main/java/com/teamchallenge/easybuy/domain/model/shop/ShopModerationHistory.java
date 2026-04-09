@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -27,8 +27,8 @@ import java.util.UUID;
 public class ShopModerationHistory {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue
+    @UuidGenerator
     @Column(name = "moderation_history_id", nullable = false, updatable = false)
     @Schema(description = "Unique moderation history record ID", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479",
             accessMode = Schema.AccessMode.READ_ONLY)
