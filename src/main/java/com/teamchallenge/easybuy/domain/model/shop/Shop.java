@@ -24,7 +24,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 @AllArgsConstructor
-@ToString(exclude = {"goods", "shopContactInfo", "moderationHistory", "shopManagers", "seoSettings", "seller", "moderatedByUser"})
+@ToString(exclude = {"goods", "shopContactInfo", "shopBillingInfo", "shopTaxInfo", "moderationHistory", "shopManagers", "seoSettings", "seller", "moderatedByUser"})
 @Schema(description = "Base information for a shop.")
 @Table(name = "shops", indexes = {
         @Index(name = "idx_shops_slug", columnList = "slug"),
@@ -80,6 +80,9 @@ public class Shop extends BaseEntity {
 
     @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
     private ShopBillingInfo shopBillingInfo;
+
+    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ShopTaxInfo shopTaxInfo;
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -221,6 +224,16 @@ public class Shop extends BaseEntity {
         this.seoSettings = seoSettings;
         if (seoSettings != null) {
             seoSettings.setShop(this);
+        }
+    }
+
+    public void setShopTaxInfo(ShopTaxInfo shopTaxInfo) {
+        if (this.shopTaxInfo != null) {
+            this.shopTaxInfo.setShop(null);
+        }
+        this.shopTaxInfo = shopTaxInfo;
+        if (shopTaxInfo != null) {
+            shopTaxInfo.setShop(this);
         }
     }
 
