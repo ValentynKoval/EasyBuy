@@ -6,11 +6,14 @@ import org.mapstruct.*;
 
 @Mapper(
         componentModel = "spring",
-        uses = {ShopContactInfoMapper.class},
+        uses = {
+                ShopContactInfoMapper.class,
+                ShopBillingMapper.class, // Подключаем маппер биллинга
+                ShopTaxMapper.class      // Подключаем маппер налогов
+        },
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         builder = @Builder(disableBuilder = true)
 )
-
 public interface ShopMapper {
 
     // ===== ENTITY → DTO =====
@@ -18,6 +21,8 @@ public interface ShopMapper {
     @Mapping(source = "seller.id", target = "sellerId")
     @Mapping(source = "moderatedByUser.id", target = "moderatedByUserId")
     @Mapping(source = "shopContactInfo", target = "shopContactInfo")
+    @Mapping(source = "shopBillingInfo", target = "shopBillingInfo") // Маппинг Stripe данных
+    @Mapping(source = "shopTaxInfo", target = "shopTaxInfo")         // Маппинг налоговых данных
     ShopDTO toDto(Shop shop);
 
 
@@ -26,6 +31,8 @@ public interface ShopMapper {
     @Mapping(target = "seller", ignore = true)
     @Mapping(target = "moderatedByUser", ignore = true)
     @Mapping(target = "shopContactInfo", ignore = true)
+    @Mapping(target = "shopBillingInfo", ignore = true) // Управляется через StripeService
+    @Mapping(target = "shopTaxInfo", ignore = true)     // Управляется через отдельный сервис
     Shop toEntity(ShopDTO dto);
 
 
@@ -36,6 +43,8 @@ public interface ShopMapper {
     @Mapping(target = "seller", ignore = true)
     @Mapping(target = "moderatedByUser", ignore = true)
     @Mapping(target = "shopContactInfo", ignore = true)
+    @Mapping(target = "shopBillingInfo", ignore = true)
+    @Mapping(target = "shopTaxInfo", ignore = true)
     void updateEntityFromDto(ShopDTO dto, @MappingTarget Shop entity);
 
 
@@ -43,7 +52,7 @@ public interface ShopMapper {
 
     @AfterMapping
     default void afterMappingToEntity(ShopDTO dto, @MappingTarget Shop entity) {
-
+        // Логика формирования Slug
         if (entity.getSlug() == null && entity.getShopName() != null) {
             entity.setSlug(
                     entity.getShopName()
@@ -63,7 +72,4 @@ public interface ShopMapper {
             entity.setShopType(Shop.ShopType.RETAILER);
         }
     }
-
-
-
 }
