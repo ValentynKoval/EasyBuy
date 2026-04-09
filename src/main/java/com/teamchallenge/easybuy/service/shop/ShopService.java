@@ -6,12 +6,19 @@ import com.teamchallenge.easybuy.domain.events.ShopUpdatedEvent;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.dto.shop.ShopDTO;
 import com.teamchallenge.easybuy.dto.shop.ShopSearchParams;
-import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
+import com.teamchallenge.easybuy.dto.shop.ShopSeoSettingsDTO;
+import com.teamchallenge.easybuy.dto.shop.shopcontact.ShopContactInfoDTO;
+import com.teamchallenge.easybuy.dto.shop.shoptaxinfo.ShopTaxInfoDTO;
+import com.teamchallenge.easybuy.exception.shop.ShopNotFoundException;
 import com.teamchallenge.easybuy.mapper.shop.ShopMapper;
 import com.teamchallenge.easybuy.repository.shop.ShopRepository;
 import com.teamchallenge.easybuy.repository.shop.ShopSearchBuilder;
 import com.teamchallenge.easybuy.repository.user.UserRepository;
 import com.teamchallenge.easybuy.repository.user.seller.SellerRepository;
+import com.teamchallenge.easybuy.service.shop.security.ShopAccessGuard;
+import com.teamchallenge.easybuy.service.shop.shopcontactinfo.ShopContactInfoService;
+import com.teamchallenge.easybuy.service.shop.shopseosettings.ShopSeoSettingsService;
+import com.teamchallenge.easybuy.service.shop.shoptaxinfo.ShopTaxService;
 import com.teamchallenge.easybuy.service.shop.validation.ShopValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +45,7 @@ import java.util.UUID;
  * - Event publishing for side effects
  *
  * What this service does NOT do:
- * - Security (handled in controller layer)
+ * - Endpoint-level auth wiring (handled by Spring Security annotations)
  * - Complex analytics (separate service)
  * - Email notifications (event listeners)
  * - Caching (repository/infrastructure layer)
@@ -56,6 +63,10 @@ public class ShopService {
     private final UserRepository userRepository;
     private final ShopValidationService validationService;
     private final ApplicationEventPublisher eventPublisher;
+    private final ShopAccessGuard accessGuard;
+    private final ShopContactInfoService shopContactInfoService;
+    private final ShopTaxService shopTaxService;
+    private final ShopSeoSettingsService shopSeoSettingsService;
 
     // === READ OPERATIONS ===
 
@@ -80,6 +91,12 @@ public class ShopService {
 
     @Transactional(readOnly = true)
     public Page<ShopDTO> getShopsBySeller(@NotNull UUID sellerId, @NotNull Pageable pageable) {
+        if (accessGuard.isCurrentUserSeller() && !accessGuard.isCurrentUserAdmin()) {
+            UUID currentSellerId = accessGuard.getCurrentSellerOrThrow().getId();
+            if (!currentSellerId.equals(sellerId)) {
+                throw new IllegalArgumentException("You can read only your own shops");
+            }
+        }
         log.debug("Fetching shops for seller: {}", sellerId);
         return shopRepository.findBySellerId(sellerId, pageable).map(shopMapper::toDto);
     }
@@ -93,6 +110,15 @@ public class ShopService {
     )
     public ShopDTO createShop(@Valid @NotNull ShopDTO shopDTO) {
         log.info("Creating shop: {}", shopDTO.getShopName());
+
+        if (accessGuard.isCurrentUserSeller() && !accessGuard.isCurrentUserAdmin()) {
+            shopDTO.setSellerId(accessGuard.getCurrentSellerOrThrow().getId());
+            shopDTO.setModeratedByUserId(null);
+            shopDTO.setShopStatus(Shop.ShopStatus.PENDING);
+            shopDTO.setVerified(false);
+            shopDTO.setFeatured(false);
+        }
+
         validationService.validateForCreation(shopDTO);
 
         Shop shop = shopMapper.toEntity(shopDTO);
@@ -109,10 +135,33 @@ public class ShopService {
     public ShopDTO updateShop(@NotNull UUID id, @Valid @NotNull ShopDTO shopDTO) {
         log.info("Updating shop: {}", id);
         Shop existingShop = findShopOrThrow(id);
+        accessGuard.requireCanManageShop(existingShop);
+
+        boolean sellerContext = accessGuard.isCurrentUserSeller() && !accessGuard.isCurrentUserAdmin();
+        Shop.ShopStatus previousStatus = existingShop.getShopStatus();
+        boolean previousVerified = existingShop.isVerified();
+        boolean previousFeatured = existingShop.isFeatured();
+        String previousRejectionReason = existingShop.getRejectionReason();
+        String previousModeratorNotes = existingShop.getModeratorNotes();
+        java.time.Instant previousLastModeratedAt = existingShop.getLastModeratedAt();
+        var previousModerator = existingShop.getModeratedByUser();
+        var previousSeller = existingShop.getSeller();
+
         validationService.validateForUpdate(existingShop, shopDTO);
 
         shopMapper.updateEntityFromDto(shopDTO, existingShop);
         setShopRelations(existingShop, shopDTO);
+
+        if (sellerContext) {
+            existingShop.setShopStatus(previousStatus);
+            existingShop.setVerified(previousVerified);
+            existingShop.setFeatured(previousFeatured);
+            existingShop.setRejectionReason(previousRejectionReason);
+            existingShop.setModeratorNotes(previousModeratorNotes);
+            existingShop.setLastModeratedAt(previousLastModeratedAt);
+            existingShop.setModeratedByUser(previousModerator);
+            existingShop.setSeller(previousSeller);
+        }
 
         Shop updatedShop = shopRepository.save(existingShop);
         eventPublisher.publishEvent(new ShopUpdatedEvent(updatedShop));
@@ -129,6 +178,12 @@ public class ShopService {
     public void deleteShop(@NotNull UUID id) {
         log.info("Deleting shop: {}", id);
         Shop shop = findShopOrThrow(id);
+        accessGuard.requireCanManageShop(shop);
+
+        if (!accessGuard.isCurrentUserAdmin()) {
+            throw new IllegalStateException("Only admin can delete shops");
+        }
+
         validationService.validateForDeletion(shop);
 
         shopRepository.delete(shop);
@@ -171,20 +226,73 @@ public class ShopService {
     }
 
     private void setShopRelations(Shop shop, ShopDTO dto) {
-        if (dto.getSellerId() != null) {
+        if (accessGuard.isCurrentUserSeller() && !accessGuard.isCurrentUserAdmin()) {
+            shop.setSeller(accessGuard.getCurrentSellerOrThrow());
+        } else if (dto.getSellerId() != null && accessGuard.isCurrentUserAdmin()) {
             shop.setSeller(sellerRepository.findById(dto.getSellerId())
                     .orElseThrow(() -> new IllegalArgumentException("Seller not found: " + dto.getSellerId())));
         }
 
-        if (dto.getModeratedByUserId() != null) {
+        if (dto.getModeratedByUserId() != null && accessGuard.isCurrentUserAdmin()) {
             shop.setModeratedByUser(userRepository.findById(dto.getModeratedByUserId())
                     .orElseThrow(() -> new IllegalArgumentException("Moderator not found: " + dto.getModeratedByUserId())));
+        }
+    }
+
+    /**
+     * Updates shop and related sub-resources in one transaction for single-page frontend editing.
+     */
+    public ShopDTO updateShopProfile(@NotNull UUID id, @NotNull ShopDTO shopDTO) {
+        ShopDTO updatedShop = updateShop(id, shopDTO);
+
+        ShopContactInfoDTO contactInfo = shopDTO.getShopContactInfo();
+        if (contactInfo != null) {
+            upsertContactInfo(id, contactInfo);
+        }
+
+        ShopTaxInfoDTO taxInfo = shopDTO.getShopTaxInfo();
+        if (taxInfo != null) {
+            upsertTaxInfo(id, taxInfo);
+        }
+
+        ShopSeoSettingsDTO seoSettings = shopDTO.getSeoSettings();
+        if (seoSettings != null) {
+            upsertSeoSettings(id, seoSettings);
+        }
+
+        return getShopById(updatedShop.getShopId());
+    }
+
+    private void upsertContactInfo(UUID shopId, ShopContactInfoDTO dto) {
+        try {
+            shopContactInfoService.update(shopId, dto);
+        } catch (IllegalArgumentException ex) {
+            shopContactInfoService.create(shopId, dto);
+        }
+    }
+
+    private void upsertTaxInfo(UUID shopId, ShopTaxInfoDTO dto) {
+        try {
+            shopTaxService.update(shopId, dto);
+        } catch (IllegalArgumentException ex) {
+            shopTaxService.create(shopId, dto);
+        }
+    }
+
+    private void upsertSeoSettings(UUID shopId, ShopSeoSettingsDTO dto) {
+        try {
+            shopSeoSettingsService.update(shopId, dto);
+        } catch (IllegalArgumentException ex) {
+            shopSeoSettingsService.create(shopId, dto);
         }
     }
 
     private void setDefaultsForNewShop(Shop shop) {
         if (shop.getShopStatus() == null) shop.setShopStatus(Shop.ShopStatus.PENDING);
         if (shop.getShopType() == null) shop.setShopType(Shop.ShopType.RETAILER);
+        if (!StringUtils.hasText(shop.getCurrency())) shop.setCurrency("UAH");
+        if (!StringUtils.hasText(shop.getLanguage())) shop.setLanguage("uk");
+        if (!StringUtils.hasText(shop.getTimezone())) shop.setTimezone("Europe/Kyiv");
         if (!StringUtils.hasText(shop.getSlug()) && StringUtils.hasText(shop.getShopName())) {
             shop.setSlug(generateSlug(shop.getShopName()));
         }
