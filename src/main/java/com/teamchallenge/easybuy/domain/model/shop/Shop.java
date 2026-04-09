@@ -24,7 +24,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 @AllArgsConstructor
-@ToString(exclude = {"goods", "shopContactInfo", "shopBillingInfo", "shopTaxInfo", "moderationHistory", "shopManagers", "seoSettings", "seller", "moderatedByUser"})
+@ToString(exclude = {"goods", "shopContactInfo", "shopBillingInfo", "shopTaxInfo", "shopAnalytics", "moderationHistory", "shopManagers", "seoSettings", "seller", "moderatedByUser"})
 @Schema(description = "Base information for a shop.")
 @Table(name = "shops", indexes = {
         @Index(name = "idx_shops_slug", columnList = "slug"),
@@ -83,6 +83,9 @@ public class Shop extends BaseEntity {
 
     @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
     private ShopTaxInfo shopTaxInfo;
+
+    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ShopAnalytics shopAnalytics;
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -234,6 +237,16 @@ public class Shop extends BaseEntity {
         this.shopTaxInfo = shopTaxInfo;
         if (shopTaxInfo != null) {
             shopTaxInfo.setShop(this);
+        }
+    }
+
+    public void setShopAnalytics(ShopAnalytics shopAnalytics) {
+        if (this.shopAnalytics != null) {
+            this.shopAnalytics.setShop(null);
+        }
+        this.shopAnalytics = shopAnalytics;
+        if (shopAnalytics != null) {
+            shopAnalytics.setShop(this);
         }
     }
 
