@@ -86,7 +86,7 @@ public class ShopContactInfoController {
     @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<ShopContactInfoDTO> patch(
             @PathVariable @NotNull UUID shopId,
-            @Valid @RequestBody ShopContactInfoDTO dto) {
+            @RequestBody ShopContactInfoDTO dto) {
 
         return ResponseEntity.ok(service.patch(shopId, dto));
     }
