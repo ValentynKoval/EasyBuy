@@ -1,4 +1,4 @@
-package com.teamchallenge.easybuy.exception.Shop;
+package com.teamchallenge.easybuy.exception.shop;
 
 public class ShopNotFoundException extends RuntimeException {
 
@@ -6,3 +6,4 @@ public class ShopNotFoundException extends RuntimeException {
         super(message);
     }
 }
+
