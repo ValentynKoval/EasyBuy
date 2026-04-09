@@ -3,10 +3,11 @@ package com.teamchallenge.easybuy.service.shop.shopanalytics;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.domain.model.shop.ShopAnalytics;
 import com.teamchallenge.easybuy.dto.shop.shopanalytics.ShopAnalyticsDTO;
-import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
+import com.teamchallenge.easybuy.exception.shop.ShopNotFoundException;
 import com.teamchallenge.easybuy.mapper.shop.ShopAnalyticsMapper;
 import com.teamchallenge.easybuy.repository.shop.ShopRepository;
 import com.teamchallenge.easybuy.repository.shop.shopanalytics.ShopAnalyticsRepository;
+import com.teamchallenge.easybuy.service.shop.security.ShopAccessGuard;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +30,11 @@ public class ShopAnalyticsService {
     private final ShopAnalyticsRepository analyticsRepository;
     private final ShopRepository shopRepository;
     private final ShopAnalyticsMapper mapper;
+    private final ShopAccessGuard accessGuard;
 
     @Transactional(readOnly = true)
     public ShopAnalyticsDTO getByShopId(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.debug("Fetching analytics for shop: {}", shopId);
         return analyticsRepository.findById(shopId)
                 .map(mapper::toDto)
@@ -40,6 +43,7 @@ public class ShopAnalyticsService {
 
     @Transactional(readOnly = true)
     public List<ShopAnalyticsDTO> getDeadShops() {
+        accessGuard.requireAdmin();
         return analyticsRepository.findByDeadShopTrueOrderByInactiveDaysDesc()
                 .stream()
                 .map(mapper::toDto)
@@ -51,6 +55,7 @@ public class ShopAnalyticsService {
             backoff = @Backoff(delay = 500)
     )
     public ShopAnalyticsDTO create(@NotNull UUID shopId, @Valid @NotNull ShopAnalyticsDTO dto) {
+        accessGuard.requireAdmin();
         log.info("Creating analytics for shop: {}", shopId);
 
         if (analyticsRepository.existsById(shopId)) {
@@ -70,6 +75,7 @@ public class ShopAnalyticsService {
     }
 
     public ShopAnalyticsDTO update(@NotNull UUID shopId, @Valid @NotNull ShopAnalyticsDTO dto) {
+        accessGuard.requireAdmin();
         log.info("Updating analytics for shop: {}", shopId);
 
         ShopAnalytics entity = analyticsRepository.findById(shopId)
@@ -83,11 +89,13 @@ public class ShopAnalyticsService {
     }
 
     public ShopAnalyticsDTO patch(@NotNull UUID shopId, @Valid @NotNull ShopAnalyticsDTO dto) {
+        accessGuard.requireAdmin();
         log.info("Patching analytics for shop: {}", shopId);
         return update(shopId, dto);
     }
 
     public ShopAnalyticsDTO recalculate(@NotNull UUID shopId) {
+        accessGuard.requireAdmin();
         log.info("Recalculating analytics for shop: {}", shopId);
 
         ShopAnalytics entity = analyticsRepository.findById(shopId)
@@ -98,6 +106,7 @@ public class ShopAnalyticsService {
     }
 
     public void delete(@NotNull UUID shopId) {
+        accessGuard.requireAdmin();
         log.info("Deleting analytics for shop: {}", shopId);
 
         if (!analyticsRepository.existsById(shopId)) {
