@@ -29,6 +29,7 @@ public class ShopSeoSettings {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
     @JoinColumn(name = "shop_id", nullable = false, unique = true)
     @Schema(description = "The shop this seo settings belongs to", requiredMode = Schema.RequiredMode.REQUIRED)
     private Shop shop;
