@@ -74,7 +74,7 @@ public class ShopSeoSettingsController {
     @PatchMapping
     @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<ShopSeoSettingsDTO> patch(@PathVariable @NotNull UUID shopId,
-                                                    @Valid @RequestBody ShopSeoSettingsDTO dto) {
+                                                    @RequestBody ShopSeoSettingsDTO dto) {
         return ResponseEntity.ok(service.patch(shopId, dto));
     }
 
