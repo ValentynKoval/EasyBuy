@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -72,6 +73,7 @@ public class GoodsController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SELLER','MANAGER','ADMIN')")
     @Operation(summary = "Create a new goods", responses = {
             @ApiResponse(responseCode = "201", description = "Successfully created",
                     content = @Content(schema = @Schema(implementation = GoodsDTO.class)))
@@ -81,6 +83,7 @@ public class GoodsController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SELLER','MANAGER','ADMIN')")
     @Operation(summary = "Update goods", responses = {
             @ApiResponse(responseCode = "200", description = "Successfully updated",
                     content = @Content(schema = @Schema(implementation = GoodsDTO.class))),
@@ -91,6 +94,7 @@ public class GoodsController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SELLER','MANAGER','ADMIN')")
     @Operation(summary = "Delete goods", responses = {
             @ApiResponse(responseCode = "200", description = "Successfully deleted"),
             @ApiResponse(responseCode = "404", description = "Goods not found")
