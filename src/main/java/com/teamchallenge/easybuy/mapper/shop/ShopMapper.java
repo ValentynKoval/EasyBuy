@@ -9,7 +9,8 @@ import org.mapstruct.*;
         uses = {
                 ShopContactInfoMapper.class,
                 ShopBillingMapper.class, // Подключаем маппер биллинга
-                ShopTaxMapper.class      // Подключаем маппер налогов
+                ShopTaxMapper.class,     // Подключаем маппер налогов
+                ShopSeoSettingsMapper.class
         },
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         builder = @Builder(disableBuilder = true)
@@ -23,6 +24,7 @@ public interface ShopMapper {
     @Mapping(source = "shopContactInfo", target = "shopContactInfo")
     @Mapping(source = "shopBillingInfo", target = "shopBillingInfo") // Маппинг Stripe данных
     @Mapping(source = "shopTaxInfo", target = "shopTaxInfo")         // Маппинг налоговых данных
+    @Mapping(source = "seoSettings", target = "seoSettings")
     ShopDTO toDto(Shop shop);
 
 
@@ -33,6 +35,7 @@ public interface ShopMapper {
     @Mapping(target = "shopContactInfo", ignore = true)
     @Mapping(target = "shopBillingInfo", ignore = true) // Управляется через StripeService
     @Mapping(target = "shopTaxInfo", ignore = true)     // Управляется через отдельный сервис
+    @Mapping(target = "seoSettings", ignore = true)
     Shop toEntity(ShopDTO dto);
 
 
@@ -45,6 +48,7 @@ public interface ShopMapper {
     @Mapping(target = "shopContactInfo", ignore = true)
     @Mapping(target = "shopBillingInfo", ignore = true)
     @Mapping(target = "shopTaxInfo", ignore = true)
+    @Mapping(target = "seoSettings", ignore = true)
     void updateEntityFromDto(ShopDTO dto, @MappingTarget Shop entity);
 
 
