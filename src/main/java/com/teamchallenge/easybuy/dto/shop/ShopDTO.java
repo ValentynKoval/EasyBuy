@@ -2,6 +2,8 @@ package com.teamchallenge.easybuy.dto.shop;
 
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.dto.shop.shopcontact.ShopContactInfoDTO;
+import com.teamchallenge.easybuy.dto.shop.shopbillinginfo.ShopBillingInfoDTO;
+import com.teamchallenge.easybuy.dto.shop.shoptaxinfo.ShopTaxInfoDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -150,6 +152,14 @@ public class ShopDTO {
     @Schema(description = "Contact information of the shop.",
             implementation = ShopContactInfoDTO.class)
     private ShopContactInfoDTO shopContactInfo;
+
+    @Schema(description = "Stripe billing information for the shop.",
+            implementation = ShopBillingInfoDTO.class)
+    private ShopBillingInfoDTO shopBillingInfo;
+
+    @Schema(description = "Tax and legal information for the shop.",
+            implementation = ShopTaxInfoDTO.class)
+    private ShopTaxInfoDTO shopTaxInfo;
 
     public enum ShopStatus {
         @Schema(description = "Store is active and available for buyers")
