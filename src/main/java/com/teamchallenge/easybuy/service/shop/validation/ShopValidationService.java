@@ -31,7 +31,11 @@ public class ShopValidationService {
     }
 
     private void validateShopName(String name) {
-        if (shopRepository.existsByShopName(name)) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Shop name must not be blank");
+        }
+
+        if (shopRepository.existsByShopNameIgnoreCase(name.trim())) {
             throw new IllegalArgumentException("Shop name already exists: " + name);
         }
     }
