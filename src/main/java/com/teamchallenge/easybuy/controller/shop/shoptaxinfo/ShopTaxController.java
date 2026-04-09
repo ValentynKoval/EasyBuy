@@ -78,7 +78,7 @@ public class ShopTaxController {
     @PatchMapping
     @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<ShopTaxInfoDTO> patch(@PathVariable @NotNull UUID shopId,
-                                                @Valid @RequestBody ShopTaxInfoDTO dto) {
+                                                @RequestBody ShopTaxInfoDTO dto) {
         return ResponseEntity.ok(service.patch(shopId, dto));
     }
 
