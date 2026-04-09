@@ -1,7 +1,9 @@
 package com.teamchallenge.easybuy.exception;
 
-import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
+import com.teamchallenge.easybuy.exception.shop.ShopNotFoundException;
+import com.teamchallenge.easybuy.exception.shop.ShopBillingIntegrationException;
 import com.teamchallenge.easybuy.exception.goods.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -112,6 +114,14 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(message, HttpStatus.CONFLICT, request);
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(
+            EntityNotFoundException ex,
+            WebRequest request) {
+
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request);
+    }
+
     /**
      * Handles all other exception with HTTP 500 status.
      */
@@ -140,5 +150,13 @@ public class GlobalExceptionHandler {
             WebRequest request) {
 
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(ShopBillingIntegrationException.class)
+    public ResponseEntity<Map<String, Object>> handleShopBillingIntegrationException(
+            ShopBillingIntegrationException ex,
+            WebRequest request) {
+
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_GATEWAY, request);
     }
 }
