@@ -5,11 +5,12 @@ import com.teamchallenge.easybuy.domain.model.shop.ShopModerationHistory;
 import com.teamchallenge.easybuy.domain.model.user.User;
 import com.teamchallenge.easybuy.dto.shop.shopmoderationhistory.ShopModerationHistoryDTO;
 import com.teamchallenge.easybuy.dto.shop.shopmoderationhistory.ShopModerationReversalDTO;
-import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
+import com.teamchallenge.easybuy.exception.shop.ShopNotFoundException;
 import com.teamchallenge.easybuy.mapper.shop.ShopModerationHistoryMapper;
 import com.teamchallenge.easybuy.repository.shop.ShopRepository;
 import com.teamchallenge.easybuy.repository.shop.shopmoderationhistory.ShopModerationHistoryRepository;
 import com.teamchallenge.easybuy.repository.user.UserRepository;
+import com.teamchallenge.easybuy.service.shop.security.ShopAccessGuard;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +35,11 @@ public class ShopModerationHistoryService {
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
     private final ShopModerationHistoryMapper mapper;
+    private final ShopAccessGuard accessGuard;
 
     @Transactional(readOnly = true)
     public List<ShopModerationHistoryDTO> getByShopId(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.debug("Fetching moderation history for shop: {}", shopId);
         return moderationHistoryRepository.findByShop_ShopIdOrderByCreatedAtDesc(shopId)
                 .stream()
@@ -46,6 +49,7 @@ public class ShopModerationHistoryService {
 
     @Transactional(readOnly = true)
     public ShopModerationHistoryDTO getById(@NotNull UUID shopId, @NotNull UUID moderationHistoryId) {
+        accessGuard.requireCanManageShop(shopId);
         log.debug("Fetching moderation history record {} for shop: {}", moderationHistoryId, shopId);
         ShopModerationHistory historyRecord = findRecordOrThrow(shopId, moderationHistoryId);
         return mapper.toDto(historyRecord);
@@ -57,6 +61,7 @@ public class ShopModerationHistoryService {
     )
     public ShopModerationHistoryDTO create(@NotNull UUID shopId,
                                            @Valid @NotNull ShopModerationHistoryDTO dto) {
+        accessGuard.requireAdmin();
         log.info("Creating moderation history record for shop: {}", shopId);
 
         Shop shop = findShopOrThrow(shopId);
@@ -81,6 +86,7 @@ public class ShopModerationHistoryService {
     public ShopModerationHistoryDTO reverse(@NotNull UUID shopId,
                                             @NotNull UUID moderationHistoryId,
                                             @Valid @NotNull ShopModerationReversalDTO dto) {
+        accessGuard.requireAdmin();
         log.info("Reversing moderation history record {} for shop: {}", moderationHistoryId, shopId);
 
         ShopModerationHistory historyRecord = findRecordOrThrow(shopId, moderationHistoryId);
