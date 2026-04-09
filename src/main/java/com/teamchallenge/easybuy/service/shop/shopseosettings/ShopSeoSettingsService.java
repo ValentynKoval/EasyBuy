@@ -3,10 +3,11 @@ package com.teamchallenge.easybuy.service.shop.shopseosettings;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.domain.model.shop.ShopSeoSettings;
 import com.teamchallenge.easybuy.dto.shop.ShopSeoSettingsDTO;
-import com.teamchallenge.easybuy.exception.Shop.ShopNotFoundException;
+import com.teamchallenge.easybuy.exception.shop.ShopNotFoundException;
 import com.teamchallenge.easybuy.mapper.shop.ShopSeoSettingsMapper;
 import com.teamchallenge.easybuy.repository.shop.ShopRepository;
 import com.teamchallenge.easybuy.repository.shop.shopseosettings.ShopSeoSettingsRepository;
+import com.teamchallenge.easybuy.service.shop.security.ShopAccessGuard;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +29,11 @@ public class ShopSeoSettingsService {
     private final ShopSeoSettingsRepository seoRepository;
     private final ShopRepository shopRepository;
     private final ShopSeoSettingsMapper mapper;
+    private final ShopAccessGuard accessGuard;
 
     @Transactional(readOnly = true)
     public ShopSeoSettingsDTO getByShopId(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.debug("Fetching SEO settings for shop: {}", shopId);
 
         return seoRepository.findById(shopId)
@@ -43,6 +46,7 @@ public class ShopSeoSettingsService {
             backoff = @Backoff(delay = 500)
     )
     public ShopSeoSettingsDTO create(@NotNull UUID shopId, @Valid @NotNull ShopSeoSettingsDTO dto) {
+        accessGuard.requireCanManageShop(shopId);
         log.info("Creating SEO settings for shop: {}", shopId);
 
         Shop shop = findShopOrThrow(shopId);
@@ -63,6 +67,7 @@ public class ShopSeoSettingsService {
     }
 
     public ShopSeoSettingsDTO update(@NotNull UUID shopId, @Valid @NotNull ShopSeoSettingsDTO dto) {
+        accessGuard.requireCanManageShop(shopId);
         log.info("Updating SEO settings for shop: {}", shopId);
 
         ShopSeoSettings entity = seoRepository.findById(shopId)
@@ -83,6 +88,7 @@ public class ShopSeoSettingsService {
     }
 
     public void delete(@NotNull UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         log.info("Deleting SEO settings for shop: {}", shopId);
 
         if (!seoRepository.existsById(shopId)) {
