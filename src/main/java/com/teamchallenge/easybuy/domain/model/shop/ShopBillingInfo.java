@@ -24,9 +24,9 @@ public class ShopBillingInfo {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId // Берёт ID из Shop и копирует в поле id этой сущности
+    @MapsId
     @JoinColumn(name = "shop_id")
-    @ToString.Exclude // Важно для предотвращения бесконечной рекурсии
+    @ToString.Exclude
     private Shop shop;
 
     @Column(name = "stripe_account_id", unique = true)
