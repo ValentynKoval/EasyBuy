@@ -21,8 +21,10 @@ public interface ShopRepository extends JpaRepository<Shop, UUID>, JpaSpecificat
     @EntityGraph(attributePaths = {"seller", "moderatedByUser"})
     Page<Shop> findBySellerId(UUID sellerId, Pageable pageable);
 
+    boolean existsByShopIdAndSeller_Id(UUID shopId, UUID sellerId);
+
     @Override
-    @EntityGraph(attributePaths = {"seller", "moderatedByUser, shopContactInfo,bseoSettings"})
+    @EntityGraph(attributePaths = {"seller", "moderatedByUser", "shopContactInfo", "seoSettings"})
     Page<Shop> findAll(Specification<Shop> spec, Pageable pageable);
 
 }
