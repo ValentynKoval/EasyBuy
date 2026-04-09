@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -37,8 +37,8 @@ import java.util.UUID;
 public class Shop extends BaseEntity {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue
+    @UuidGenerator
     @Column(name = "shop_id", nullable = false, updatable = false)
     @EqualsAndHashCode.Include
     @Schema(description = "Unique shop ID. Just for database. Read only", example = "e3b0c442-98fc-4629-8b9c-a5de62ed1df1",
@@ -227,6 +227,26 @@ public class Shop extends BaseEntity {
         this.seoSettings = seoSettings;
         if (seoSettings != null) {
             seoSettings.setShop(this);
+        }
+    }
+
+    public void setShopContactInfo(ShopContactInfo shopContactInfo) {
+        if (this.shopContactInfo != null) {
+            this.shopContactInfo.setShop(null);
+        }
+        this.shopContactInfo = shopContactInfo;
+        if (shopContactInfo != null) {
+            shopContactInfo.setShop(this);
+        }
+    }
+
+    public void setShopBillingInfo(ShopBillingInfo shopBillingInfo) {
+        if (this.shopBillingInfo != null) {
+            this.shopBillingInfo.setShop(null);
+        }
+        this.shopBillingInfo = shopBillingInfo;
+        if (shopBillingInfo != null) {
+            shopBillingInfo.setShop(this);
         }
     }
 
