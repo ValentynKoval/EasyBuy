@@ -4,9 +4,11 @@ import com.stripe.exception.StripeException;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.domain.model.shop.ShopBillingInfo;
 import com.teamchallenge.easybuy.dto.shop.shopbillinginfo.ShopBillingInfoDTO;
+import com.teamchallenge.easybuy.exception.shop.ShopBillingIntegrationException;
 import com.teamchallenge.easybuy.mapper.shop.ShopBillingMapper;
 import com.teamchallenge.easybuy.repository.shop.ShopRepository;
 import com.teamchallenge.easybuy.repository.shop.shopbillinginfo.ShopBillingRepository;
+import com.teamchallenge.easybuy.service.shop.security.ShopAccessGuard;
 import com.teamchallenge.easybuy.service.payment.StripeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +27,11 @@ public class ShopBillingService {
     private final ShopRepository shopRepository;
     private final ShopBillingMapper billingMapper;
     private final StripeService stripeService;
+    private final ShopAccessGuard accessGuard;
 
     @Transactional(readOnly = true)
     public ShopBillingInfoDTO getBillingInfo(UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         ShopBillingInfo billingInfo = billingRepository.findById(shopId)
                 .orElseThrow(() -> new EntityNotFoundException("Billing info not found for shop: " + shopId));
         return billingMapper.toDto(billingInfo);
@@ -38,6 +42,7 @@ public class ShopBillingService {
      */
     @Transactional
     public ShopBillingInfoDTO setupStripeOnboarding(UUID shopId) {
+        accessGuard.requireCanManageShop(shopId);
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new EntityNotFoundException("Shop not found: " + shopId));
 
@@ -69,7 +74,7 @@ public class ShopBillingService {
 
         } catch (StripeException e) {
             log.error("Stripe integration failed for shop {}: {}", shopId, e.getMessage());
-            throw new RuntimeException("Stripe service communication error", e);
+            throw new ShopBillingIntegrationException("Stripe service communication error", e);
         }
     }
 }
