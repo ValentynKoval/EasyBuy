@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -154,16 +153,15 @@ public class NotificationService {
         try {
             String html = processTemplate("email/new_shop_admin_notification.html", model);
 
-            CompletableFuture<?>[] futures = Arrays.stream(adminEmails)
-                    .map(email -> CompletableFuture.runAsync(() -> {
-                        try {
-                            sendEmail(email, "Новый магазин создан - " + shop.getShopName(), html);
-                        } catch (MessagingException e) {
-                            log.error("Failed to send new shop notification to admin: {}", email, e);
-                        }
-                    })).toArray(CompletableFuture[]::new);
+            for (String email : adminEmails) {
+                try {
+                    sendEmail(email, "Новый магазин создан - " + shop.getShopName(), html);
+                } catch (MessagingException e) {
+                    log.error("Failed to send new shop notification to admin: {}", email, e);
+                }
+            }
 
-            return CompletableFuture.allOf(futures);
+            return CompletableFuture.completedFuture(null);
 
         } catch (IOException | TemplateException e) {
             log.error("Failed to generate new shop admin email", e);
