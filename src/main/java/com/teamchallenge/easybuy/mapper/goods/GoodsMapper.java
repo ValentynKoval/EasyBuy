@@ -2,7 +2,7 @@ package com.teamchallenge.easybuy.mapper.goods;
 
 import com.teamchallenge.easybuy.dto.goods.GoodsDTO;
 import com.teamchallenge.easybuy.domain.model.goods.Goods;
-import com.teamchallenge.easybuy.domain.model.shop.Shop; // ПРОВЕРЬ ЭТОТ ИМПОРТ
+import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -15,12 +15,10 @@ import java.util.UUID;
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface GoodsMapper {
 
-    // Entity -> DTO
     @Mapping(source = "category.id", target = "categoryId")
-    @Mapping(source = "shop.shopId", target = "shopId") // Теперь берем из shop.shopId
+    @Mapping(source = "shop.shopId", target = "shopId")
     GoodsDTO toDto(Goods goods);
 
-    // DTO -> Entity
     @Mapping(source = "categoryId", target = "category.id")
     @Mapping(target = "additionalImages", ignore = true)
     @Mapping(source = "shopId", target = "shop", qualifiedByName = "uuidToShop")
@@ -29,7 +27,7 @@ public interface GoodsMapper {
     @Named("uuidToShop")
     default Shop uuidToShop(UUID id) {
         if (id == null) return null;
-        Shop shop = new Shop(); // Убедись, что NoArgsConstructor в Shop - PUBLIC
+        Shop shop = new Shop();
         shop.setShopId(id);
         return shop;
     }
