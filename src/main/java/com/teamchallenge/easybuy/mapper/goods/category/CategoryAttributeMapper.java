@@ -18,7 +18,6 @@ public interface CategoryAttributeMapper {
     @Mapping(source = "category.id", target = "categoryId")
     CategoryAttributeDTO toDto(CategoryAttribute attribute);
 
-    // ✅ ВОТ ГЛАВНОЕ ИСПРАВЛЕНИЕ
     @Mapping(source = "type", target = "type", qualifiedByName = "mapStringToType")
     @Mapping(source = "categoryId", target = "category.id")
     CategoryAttribute toEntity(CategoryAttributeDTO categoryAttributeDTO);
@@ -30,10 +29,13 @@ public interface CategoryAttributeMapper {
 
     @Named("mapStringToType")
     default AttributeType mapStringToType(String type) {
+        if (type == null) {
+            return null;
+        }
         try {
-            return type != null ? AttributeType.valueOf(type) : null;
-        } catch (Exception e) {
-            return AttributeType.STRING; // fallback
+            return AttributeType.valueOf(type);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Invalid attribute type: " + type, ex);
         }
     }
 }
