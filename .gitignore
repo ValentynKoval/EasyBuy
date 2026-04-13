@@ -5,6 +5,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+
 ### STS ###
 .apt_generated
 .classpath
@@ -34,4 +35,18 @@ build/
 .env
 .env.*
 !.env.example
+
+# AI agent instructions (local use only)
+AGENTS.md
+
+# Migration / architecture markdown artifacts
+MIGRATION_*.md
+*_REPORT.md
+*_SUMMARY.md
+*_ANALYSIS.md
+ARCHITECTURE_GRAPH.md
+DEPENDENCY_ANALYSIS.md
+CIRCULAR_DEPENDENCIES_ANALYSIS.md
+INDEX.md
+RESEARCH_SUMMARY.md
 
