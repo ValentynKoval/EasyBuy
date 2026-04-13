@@ -15,8 +15,12 @@ import com.teamchallenge.easybuy.repository.shop.shopcontact.ShopContactInfoRepo
 import com.teamchallenge.easybuy.repository.shop.shopseosettings.ShopSeoSettingsRepository;
 import com.teamchallenge.easybuy.repository.shop.shoptaxrepository.ShopTaxRepository;
 import com.teamchallenge.easybuy.repository.user.seller.SellerRepository;
+import com.teamchallenge.easybuy.service.shop.analytics.AnalyticsService;
+import com.teamchallenge.easybuy.service.shop.audit.AuditService;
+import com.teamchallenge.easybuy.service.shop.notification.NotificationService;
 import com.teamchallenge.easybuy.service.payment.StripeService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -28,11 +32,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -68,6 +74,22 @@ class ShopOwnershipIntegrationTest {
 
     @MockitoBean
     private StripeService stripeService;
+
+    @MockitoBean
+    private NotificationService notificationService;
+
+    @MockitoBean
+    private AnalyticsService analyticsService;
+
+    @MockitoBean
+    private AuditService auditService;
+
+    @BeforeEach
+    void setUpEventServiceStubs() {
+        when(notificationService.sendShopUpdatedEmail(any(Shop.class))).thenReturn(CompletableFuture.completedFuture(null));
+        when(analyticsService.recordShopUpdate(any(Shop.class))).thenReturn(CompletableFuture.completedFuture(null));
+        when(auditService.logShopUpdate(any(Shop.class))).thenReturn(CompletableFuture.completedFuture(null));
+    }
 
     @Test
     @WithMockUser(username = "seller-owner@example.com", roles = {"SELLER"})

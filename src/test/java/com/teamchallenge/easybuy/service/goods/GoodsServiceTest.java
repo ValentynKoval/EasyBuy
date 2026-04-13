@@ -7,14 +7,23 @@ import com.teamchallenge.easybuy.domain.model.goods.Goods;
 import com.teamchallenge.easybuy.domain.model.goods.category.Category;
 import com.teamchallenge.easybuy.domain.model.shop.Shop;
 import com.teamchallenge.easybuy.repository.goods.GoodsRepository;
+import com.teamchallenge.easybuy.repository.shop.ShopRepository;
+import com.teamchallenge.easybuy.repository.user.UserRepository;
+import com.teamchallenge.easybuy.domain.model.user.Role;
+import com.teamchallenge.easybuy.domain.model.user.Seller;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -25,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class GoodsServiceTest {
 
     @Mock
@@ -33,18 +43,29 @@ class GoodsServiceTest {
     @Mock
     private GoodsMapper goodsMapper;
 
+    @Mock
+    private ShopRepository shopRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private GoodsService goodsService;
 
     private Goods goods;
     private GoodsDTO goodsDTO;
     private UUID goodsId;
+    private UUID currentUserId;
+    private String currentUserEmail;
+    private Seller currentSeller;
 
     @BeforeEach
     void setUp() {
         goodsId = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
         UUID shopId = UUID.randomUUID();
+        currentUserId = UUID.randomUUID();
+        currentUserEmail = "seller@example.com";
 
         Category category = new Category();
         category.setId(categoryId);
@@ -96,6 +117,21 @@ class GoodsServiceTest {
         goodsDTO.setCreatedAt(goods.getCreatedAt());
         goodsDTO.setUpdatedAt(goods.getUpdatedAt());
         goodsDTO.setAdditionalImages(new ArrayList<>());
+
+        currentSeller = new Seller();
+        currentSeller.setId(currentUserId);
+        currentSeller.setEmail(currentUserEmail);
+        currentSeller.setRole(Role.SELLER);
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(currentUserEmail, "password", Collections.emptyList())
+        );
+        when(userRepository.findByEmail(currentUserEmail)).thenReturn(Optional.of(currentSeller));
+        when(shopRepository.existsByShopIdAndSeller_Id(any(UUID.class), eq(currentUserId))).thenReturn(true);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test

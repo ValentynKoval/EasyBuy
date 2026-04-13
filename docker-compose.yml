@@ -40,6 +40,9 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       PORT: 8080
+      STRIPE_API_KEY: sk_test_dummy
+      STRIPE_ONBOARDING_RETURN_URL: http://localhost:8081/billing/return
+      STRIPE_ONBOARDING_REFRESH_URL: http://localhost:8081/billing/refresh
     ports:
       - "8081:8080"
     depends_on:
