@@ -9,6 +9,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * 🎧 Shop Event Listener - обработка событий магазинов
  *
@@ -33,21 +35,13 @@ public class ShopEventListener {
 
         log.info("Processing shop created event for: {}", shop.getShopName());
 
-        try {
-            // Отправляем уведомления
-            notificationService.sendShopCreatedEmail(shop);
-
-            // Собираем аналитику
-            analyticsService.recordShopCreation(shop);
-
-            // Аудит
-            auditService.logShopCreation(shop);
-
-            log.info("Shop created event processed successfully for: {}", shop.getShopName());
-
-        } catch (Exception e) {
-            log.error("Failed to process shop created event for: {}", shop.getShopName(), e);
-        }
+        processEventAsync(
+                "created",
+                shop.getShopName(),
+                notificationService.sendShopCreatedEmail(shop),
+                analyticsService.recordShopCreation(shop),
+                auditService.logShopCreation(shop)
+        );
     }
 
     @EventListener
@@ -57,21 +51,13 @@ public class ShopEventListener {
 
         log.info("Processing shop updated event for: {}", shop.getShopName());
 
-        try {
-            // Отправляем уведомления
-            notificationService.sendShopUpdatedEmail(shop);
-
-            // Собираем аналитику
-            analyticsService.recordShopUpdate(shop);
-
-            // Аудит
-            auditService.logShopUpdate(shop);
-
-            log.info("Shop updated event processed successfully for: {}", shop.getShopName());
-
-        } catch (Exception e) {
-            log.error("Failed to process shop updated event for: {}", shop.getShopName(), e);
-        }
+        processEventAsync(
+                "updated",
+                shop.getShopName(),
+                notificationService.sendShopUpdatedEmail(shop),
+                analyticsService.recordShopUpdate(shop),
+                auditService.logShopUpdate(shop)
+        );
     }
 
     @EventListener
@@ -81,20 +67,23 @@ public class ShopEventListener {
 
         log.info("Processing shop deleted event for: {}", shop.getShopName());
 
-        try {
-            // Отправляем уведомления
-            notificationService.sendShopDeletedEmail(shop);
+        processEventAsync(
+                "deleted",
+                shop.getShopName(),
+                notificationService.sendShopDeletedEmail(shop),
+                analyticsService.recordShopDeletion(shop),
+                auditService.logShopDeletion(shop)
+        );
+    }
 
-            // Собираем аналитику
-            analyticsService.recordShopDeletion(shop);
-
-            // Аудит
-            auditService.logShopDeletion(shop);
-
-            log.info("Shop deleted event processed successfully for: {}", shop.getShopName());
-
-        } catch (Exception e) {
-            log.error("Failed to process shop deleted event for: {}", shop.getShopName(), e);
-        }
+    private void processEventAsync(String eventType, String shopName, CompletableFuture<Void>... tasks) {
+        CompletableFuture.allOf(tasks)
+                .whenComplete((unused, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Failed to process shop {} event for: {}", eventType, shopName, throwable);
+                        return;
+                    }
+                    log.info("Shop {} event processed successfully for: {}", eventType, shopName);
+                });
     }
 }

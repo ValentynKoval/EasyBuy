@@ -11,9 +11,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,41 +31,53 @@ class ShopEventListenerTest {
     private ShopEventListener listener;
 
     @Test
-    @DisplayName("handleShopCreated should swallow notification failures and not propagate")
-    void handleShopCreated_notificationFailure_shouldNotThrow() {
+    @DisplayName("handleShopCreated should not throw when notification future fails")
+    void handleShopCreated_notificationFutureFailure_shouldNotThrow() {
         Shop shop = testShop("Created Shop");
         ShopCreatedEvent event = new ShopCreatedEvent(shop);
 
-        doThrow(new RuntimeException("mail failed"))
-                .when(notificationService).sendShopCreatedEmail(shop);
+        when(notificationService.sendShopCreatedEmail(shop))
+                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("mail failed")));
+        when(analyticsService.recordShopCreation(shop))
+                .thenReturn(CompletableFuture.completedFuture(null));
+        when(auditService.logShopCreation(shop))
+                .thenReturn(CompletableFuture.completedFuture(null));
 
         assertDoesNotThrow(() -> listener.handleShopCreated(event));
-        verify(analyticsService, never()).recordShopCreation(shop);
-        verify(auditService, never()).logShopCreation(shop);
+        verify(analyticsService).recordShopCreation(shop);
+        verify(auditService).logShopCreation(shop);
     }
 
     @Test
-    @DisplayName("handleShopUpdated should swallow analytics failures and not propagate")
-    void handleShopUpdated_analyticsFailure_shouldNotThrow() {
+    @DisplayName("handleShopUpdated should not throw when analytics future fails")
+    void handleShopUpdated_analyticsFutureFailure_shouldNotThrow() {
         Shop shop = testShop("Updated Shop");
         ShopUpdatedEvent event = new ShopUpdatedEvent(shop);
 
-        doThrow(new RuntimeException("analytics failed"))
-                .when(analyticsService).recordShopUpdate(shop);
+        when(notificationService.sendShopUpdatedEmail(shop))
+                .thenReturn(CompletableFuture.completedFuture(null));
+        when(analyticsService.recordShopUpdate(shop))
+                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("analytics failed")));
+        when(auditService.logShopUpdate(shop))
+                .thenReturn(CompletableFuture.completedFuture(null));
 
         assertDoesNotThrow(() -> listener.handleShopUpdated(event));
         verify(notificationService).sendShopUpdatedEmail(shop);
-        verify(auditService, never()).logShopUpdate(shop);
+        verify(auditService).logShopUpdate(shop);
     }
 
     @Test
-    @DisplayName("handleShopDeleted should swallow audit failures and not propagate")
-    void handleShopDeleted_auditFailure_shouldNotThrow() {
+    @DisplayName("handleShopDeleted should not throw when audit future fails")
+    void handleShopDeleted_auditFutureFailure_shouldNotThrow() {
         Shop shop = testShop("Deleted Shop");
         ShopDeletedEvent event = new ShopDeletedEvent(shop);
 
-        doThrow(new RuntimeException("audit failed"))
-                .when(auditService).logShopDeletion(shop);
+        when(notificationService.sendShopDeletedEmail(shop))
+                .thenReturn(CompletableFuture.completedFuture(null));
+        when(analyticsService.recordShopDeletion(shop))
+                .thenReturn(CompletableFuture.completedFuture(null));
+        when(auditService.logShopDeletion(shop))
+                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("audit failed")));
 
         assertDoesNotThrow(() -> listener.handleShopDeleted(event));
         verify(notificationService).sendShopDeletedEmail(shop);
