@@ -1,42 +1,45 @@
-# deploy.ps1
-Write-Host "🧹 Очистка старых контейнеров и данных..." -ForegroundColor Yellow
+#!/usr/bin/env sh
+set -eu
 
-# Остановка контейнеров проекта
-docker-compose down -v --remove-orphans
+echo_info() {
+  printf '%s\n' "$1"
+}
 
-# Удаление образов проекта (игнорируем ошибки)
-docker rmi easybuy-postgres easybuy-redis easybuy-pgadmin 2>$null
+if docker compose version >/dev/null 2>&1; then
+  compose() { docker compose "$@"; }
+elif command -v docker-compose >/dev/null 2>&1; then
+  compose() { docker-compose "$@"; }
+else
+  echo "Docker Compose is required but was not found." >&2
+  exit 1
+fi
 
-# Очистка неиспользуемых ресурсов
+echo_info "Cleaning old containers and volumes..."
+compose down -v --remove-orphans || true
+
+# Remove project images if they exist.
+docker rmi easybuy-postgres easybuy-redis easybuy-pgadmin >/dev/null 2>&1 || true
 docker system prune -f
 
-Write-Host "🚀 Создание новой инфраструктуры..." -ForegroundColor Green
+echo_info "Building and starting infrastructure..."
+compose up -d --build
 
-# Создание и запуск контейнеров
-docker-compose up -d --build
+echo_info "Waiting for PostgreSQL readiness..."
+until docker exec easybuy-postgres pg_isready -U postgres >/dev/null 2>&1; do
+  sleep 2
+done
 
-Write-Host "⏳ Ожидание готовности сервисов..." -ForegroundColor Cyan
+echo_info "Waiting for Redis readiness..."
+until docker exec easybuy-redis redis-cli ping >/dev/null 2>&1; do
+  sleep 2
+done
 
-# Ожидание готовности PostgreSQL
-do {
-    Write-Host "Ожидание PostgreSQL..." -ForegroundColor Yellow
-    Start-Sleep -Seconds 2
-    $pgReady = docker exec easybuy-postgres pg_isready -U postgres 2>$null
-} while ($LASTEXITCODE -ne 0)
-
-# Ожидание готовности Redis
-do {
-    Write-Host "Ожидание Redis..." -ForegroundColor Yellow
-    Start-Sleep -Seconds 2
-    $redisReady = docker exec easybuy-redis redis-cli ping 2>$null
-} while ($LASTEXITCODE -ne 0)
-
-Write-Host "✅ Инфраструктура готова!" -ForegroundColor Green
-Write-Host "📊 Сервисы:" -ForegroundColor White
-Write-Host "   PostgreSQL: localhost:5432" -ForegroundColor White
-Write-Host "   Redis: localhost:6379" -ForegroundColor White
-Write-Host "   pgAdmin: http://localhost:8080" -ForegroundColor White
-Write-Host ""
-Write-Host "🔐 Учетные данные:" -ForegroundColor White
-Write-Host "   PostgreSQL: postgres/postgres" -ForegroundColor White
-Write-Host "   pgAdmin: admin@admin.com/admin123" -ForegroundColor White
+echo_info "Infrastructure is ready."
+echo_info "Services:"
+echo_info "  PostgreSQL: localhost:5432"
+echo_info "  Redis: localhost:6379"
+echo_info "  pgAdmin: http://localhost:8080"
+echo_info ""
+echo_info "Credentials:"
+echo_info "  PostgreSQL: postgres/postgres"
+echo_info "  pgAdmin: admin@admin.com/admin123"
