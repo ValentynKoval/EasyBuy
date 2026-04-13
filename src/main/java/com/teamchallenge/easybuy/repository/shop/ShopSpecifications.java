@@ -29,6 +29,17 @@ public final class ShopSpecifications {
     }
 
     /**
+     * Filters shops by their unique identifier.
+     *
+     * @param shopId the unique shop identifier.
+     * @return a specification matching the provided shop ID.
+     */
+    public static Specification<Shop> hasShopId(UUID shopId) {
+        return (root, query, cb) ->
+                shopId == null ? cb.conjunction() : cb.equal(root.get("shopId"), shopId);
+    }
+
+    /**
      * Filters shops based on whether they are featured/recommended.
      *
      * @param featured true to find featured shops, false otherwise.
@@ -50,6 +61,17 @@ public final class ShopSpecifications {
             if (sellerId == null) return cb.conjunction();
             return cb.equal(root.get("seller").get("id"), sellerId);
         };
+    }
+
+    /**
+     * Filters shops moderated by a specific user.
+     *
+     * @param moderatedByUserId moderator user identifier.
+     * @return a specification matching the moderator ID.
+     */
+    public static Specification<Shop> hasModeratedByUserId(UUID moderatedByUserId) {
+        return (root, query, cb) ->
+                moderatedByUserId == null ? cb.conjunction() : cb.equal(root.get("moderatedByUser").get("id"), moderatedByUserId);
     }
 
     /**
@@ -81,6 +103,76 @@ public final class ShopSpecifications {
             if (name == null || name.isBlank()) return cb.conjunction();
             return cb.like(cb.lower(root.get("shopName")), "%" + name.toLowerCase() + "%");
         };
+    }
+
+    /**
+     * Filters shops by description using a partial match (LIKE).
+     *
+     * @param description the description fragment to search for.
+     * @return a specification for partial description matching.
+     */
+    public static Specification<Shop> likeDescription(String description) {
+        return (root, query, cb) -> {
+            if (description == null || description.isBlank()) return cb.conjunction();
+            return cb.like(cb.lower(root.get("shopDescription")), "%" + description.toLowerCase() + "%");
+        };
+    }
+
+    /**
+     * Filters shops by exact slug (case-insensitive).
+     *
+     * @param slug the slug to match.
+     * @return a specification for slug matching.
+     */
+    public static Specification<Shop> hasSlug(String slug) {
+        return (root, query, cb) -> {
+            if (slug == null || slug.isBlank()) return cb.conjunction();
+            return cb.equal(cb.lower(root.get("slug")), slug.toLowerCase());
+        };
+    }
+
+    /**
+     * Filters shops created at or after the provided timestamp.
+     *
+     * @param minCreatedAt lower bound for createdAt.
+     * @return a specification for createdAt lower bound.
+     */
+    public static Specification<Shop> createdAtAfterOrEqual(java.time.Instant minCreatedAt) {
+        return (root, query, cb) ->
+                minCreatedAt == null ? cb.conjunction() : cb.greaterThanOrEqualTo(root.get("createdAt"), minCreatedAt);
+    }
+
+    /**
+     * Filters shops created at or before the provided timestamp.
+     *
+     * @param maxCreatedAt upper bound for createdAt.
+     * @return a specification for createdAt upper bound.
+     */
+    public static Specification<Shop> createdAtBeforeOrEqual(java.time.Instant maxCreatedAt) {
+        return (root, query, cb) ->
+                maxCreatedAt == null ? cb.conjunction() : cb.lessThanOrEqualTo(root.get("createdAt"), maxCreatedAt);
+    }
+
+    /**
+     * Filters shops updated at or after the provided timestamp.
+     *
+     * @param minUpdatedAt lower bound for updatedAt.
+     * @return a specification for updatedAt lower bound.
+     */
+    public static Specification<Shop> updatedAtAfterOrEqual(java.time.Instant minUpdatedAt) {
+        return (root, query, cb) ->
+                minUpdatedAt == null ? cb.conjunction() : cb.greaterThanOrEqualTo(root.get("updatedAt"), minUpdatedAt);
+    }
+
+    /**
+     * Filters shops updated at or before the provided timestamp.
+     *
+     * @param maxUpdatedAt upper bound for updatedAt.
+     * @return a specification for updatedAt upper bound.
+     */
+    public static Specification<Shop> updatedAtBeforeOrEqual(java.time.Instant maxUpdatedAt) {
+        return (root, query, cb) ->
+                maxUpdatedAt == null ? cb.conjunction() : cb.lessThanOrEqualTo(root.get("updatedAt"), maxUpdatedAt);
     }
 
     /**
