@@ -1,6 +1,32 @@
 This branch implements Shop module 
 
-As part of the Shop module refinement, I have implemented full CRUD functionality for the Shop entity. This update aligns endpoints with business roles (BUYER / SELLER / MANAGER / ADMIN) and strengthens ownership validation (e.g., handling "foreign shop -> 403" vs. "own shop -> 200" scenarios). The store profile editing logic has also been streamlined into a single flow (PUT /shops/{id}/profile).
+# EasyBuy - Feature-Based Architecture ✅
+
+**Статус миграции:** ✅ Feature-based packaging полностью завершена (2026-04-14)
+
+## Архитектура
+
+Проект использует **feature-based packaging** вместо слоистой архитектуры:
+
+```
+src/main/java/com/teamchallenge/easybuy/
+├── common/          # Общие DTOs, маппинги, конфиги
+├── security/        # JWT, Security конфиг
+├── user/            # User domain
+├── auth/            # Authentication & Authorization
+├── shop/            # Shop domain (controller, service, repository, mapper, domain)
+├── product/         # Product/Goods domain
+├── infrastructure/  # Mail, Cloudinary, Cache
+└── payment/         # Stripe интеграция
+```
+
+Это дает лучшую модульность, масштабируемость и упрощает добавление новых features.
+
+**Подробнее:** см. [MIGRATION_COMPLETE.md](./MIGRATION_COMPLETE.md) и [AGENTS.md](./AGENTS.md)
+
+## Shop Module
+
+As part of the Shop module refinement, full CRUD functionality for the Shop entity has been implemented. This aligns endpoints with business roles (BUYER / SELLER / MANAGER / ADMIN) and strengthens ownership validation (e.g., handling "foreign shop -> 403" vs. "own shop -> 200" scenarios). The store profile editing logic has been streamlined into a single flow (PUT /shops/{id}/profile).
 
 Key changes:
 

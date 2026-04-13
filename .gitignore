@@ -5,6 +5,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+
 ### STS ###
 .apt_generated
 .classpath
@@ -34,4 +35,7 @@ build/
 .env
 .env.*
 !.env.example
+
+# AI agent instructions (local use only)
+AGENTS.md
 

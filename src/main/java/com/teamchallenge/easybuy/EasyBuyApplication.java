@@ -13,7 +13,12 @@ import org.springframework.retry.annotation.EnableRetry;
 @EnableRetry
 @EnableCaching
 @EnableJpaAuditing
-@EnableJpaRepositories(basePackages = "com.teamchallenge.easybuy")
+@EnableJpaRepositories(basePackages = {
+        "com.teamchallenge.easybuy.shop.repository",
+        "com.teamchallenge.easybuy.product.repository",
+        "com.teamchallenge.easybuy.user.repository",
+        "com.teamchallenge.easybuy.auth.repository"
+})
 @Configuration
 @SpringBootApplication
 public class EasyBuyApplication {
