@@ -1,16 +1,10 @@
 package com.teamchallenge.easybuy.mapper.goods.category;
 
-import com.teamchallenge.easybuy.dto.goods.category.CategoryAttributeDTO;
+import com.teamchallenge.easybuy.domain.model.goods.category.Category;
 import com.teamchallenge.easybuy.dto.goods.category.CategoryDTO;
-import com.teamchallenge.easybuy.models.goods.category.Category;
-import com.teamchallenge.easybuy.models.goods.category.CategoryAttribute;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring", uses = CategoryAttributeMapper.class, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryMapper {
@@ -26,4 +20,5 @@ public interface CategoryMapper {
     @Mapping(target = "subcategories", ignore = true)
     @Mapping(target = "attributes", ignore = true)
     Category toEntity(CategoryDTO categoryDTO);
+
 }

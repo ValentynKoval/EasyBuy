@@ -1,7 +1,6 @@
 package com.teamchallenge.easybuy.dto.user;
 
 import com.teamchallenge.easybuy.dto.AddressDto;
-import com.teamchallenge.easybuy.dto.user.CustomerProfileDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;

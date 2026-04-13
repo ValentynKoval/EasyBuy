@@ -1,5 +1,6 @@
 HELP.md
 target/
+.class
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -29,5 +30,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# Local environment files (may contain secrets)
+.env
+.env.*
+!.env.example
+
